@@ -685,8 +685,47 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     </div>
   </div>
 
+  <div class="section" id="sec-utm">
+    <div class="section-head"><span class="section-num">08</span><h2>UTM tagging coverage — July</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
+    <p class="section-note">This finally answers the client's original UTM request — and corrects something we got wrong earlier in this report.</p>
+    <div class="callout good hideable">
+      <b>Correction:</b> earlier sections of this dashboard stated no real UTM tagging was happening, based on the page-level exports we were using — those only ever showed Facebook's automatic <code>fbclid</code> parameter, never manual tags. A proper Session Source/Medium/Campaign export proves that was wrong: real, deliberate UTM tagging <b>is</b> happening — it just wasn't visible in the report type we'd been pulling.
+    </div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
+      <div class="kpi"><div class="kpi-label">UTM-tagged sessions</div><div class="kpi-val">283</div><div class="kpi-delta flat">of 2,067 total July sessions</div></div>
+      <div class="kpi"><div class="kpi-label">Share of traffic tagged</div><div class="kpi-val">13.7%</div><div class="kpi-delta flat">86.3% arrives untagged (direct, organic, etc.)</div></div>
+      <div class="kpi"><div class="kpi-label">Event page tagging coverage</div><div class="kpi-val">54%</div><div class="kpi-delta flat">218 of 404 sessions to the event page</div></div>
+    </div>
+    <div style="height:20px;"></div>
+    <div class="grid-2">
+      <div class="panel">
+        <h3>What's actually tagged</h3>
+        <p class="panel-sub">Two coordinated campaigns account for nearly everything tagged.</p>
+        <table>
+          <tr><th>Source / Medium</th><th>Campaign</th><th class="num">Sessions</th></tr>
+          <tr><td>facebook / organic_social</td><td>turn_your_impact_into_growth</td><td class="num">152</td></tr>
+          <tr><td>instagram / organic_social</td><td>turn_your_impact_into_growth</td><td class="num">33</td></tr>
+          <tr><td>tiktok / organic_social</td><td>turn_your_impact_into_growth</td><td class="num">32</td></tr>
+          <tr><td>website / banner</td><td>booking_com_fetola</td><td class="num">18</td></tr>
+          <tr><td>webinar_deck / referral</td><td>booking_com_webinar</td><td class="num">16</td></tr>
+          <tr><td>email / email</td><td>booking_com_fetola</td><td class="num">9</td></tr>
+          <tr><td>brochure / qr_code</td><td>booking_com_travelshow</td><td class="num">4</td></tr>
+        </table>
+        <div class="context-note">The <b>booking_com_*</b> cluster (52 sessions total) shows real cross-channel discipline — banner, email, WhatsApp, a webinar deck referral link, even a QR code on a printed brochure all carrying the same coordinated tag. Worth telling the client this part is working well. The handful of <code>fb / paid</code> rows with long numeric campaign IDs are Meta's own automatic ad-tagging, not manual UTMs — excluded from this "working well" credit.</div>
+      </div>
+      <div class="panel">
+        <h3>The gap worth investigating</h3>
+        <p class="panel-sub">Even the best-tagged campaign isn't fully covered.</p>
+        <div class="callout warn hideable">
+          <b>Only 54% of the event page's own traffic is tagged.</b> /turn_your_impact_into_growth/ pulled 404 sessions in July (Section 02), but only 218 of those arrived via a UTM-tagged link. The other 186 sessions reached the same page through untagged paths — direct link pastes, shares without the tracked link, or a channel that's dropping the parameter somewhere. Worth asking whoever's distributing this link whether they're always using the tagged version.
+        </div>
+        <div class="context-note">Bigger picture: 86.3% of all July traffic carries no UTM tag at all. That's normal for organic search and direct visits (which shouldn't be tagged), but it also means Direct's large session count (658 in July) likely includes some social/email traffic that should have been tagged and wasn't — untagged links often fall into "Direct" by default in GA4.</div>
+      </div>
+    </div>
+  </div>
+
   <div class="section" id="sec-tactics">
-    <div class="section-head"><span class="section-num">08</span><h2>Immediate tactical recommendations</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
+    <div class="section-head"><span class="section-num">09</span><h2>Immediate tactical recommendations</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
     <div class="icon-grid">
       <div class="icon-card hideable"><span class="icon">🔗</span><h4>1. Link the funnel top-of-page</h4><p>The single highest-leverage fix: add a visible sign-up/contact CTA directly on /turn-your-impact-into-growth/, the homepage, and /nedbank-fashion-accelerator-programme/ — July's three highest-traffic pages sent 0 visitors to the conversion pages.</p></div>
       <div class="icon-card hideable"><span class="icon">↔️</span><h4>2. Retarget warm audiences</h4><p>Set up Meta and LinkedIn pixels to target the ~1,339 users from July who visited but didn't convert. Cheaper than fresh acquisition, and they already know the brand.</p></div>
@@ -703,7 +742,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="section-num">09</span><h2>Core Web Vitals — pre-migration baseline (Home)</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
+    <div class="section-head"><span class="section-num">10</span><h2>Core Web Vitals — pre-migration baseline (Home)</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
     <p class="section-note">Desktop is healthy and proves the codebase itself isn't broken. Mobile has one real, connected problem worth fixing before migration — everything server-related should wait and be re-tested on Azure.</p>
     <div class="grid-2">
       <div class="panel">
@@ -750,7 +789,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="section-num">10</span><h2>PageSpeed priorities pre-migration</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
+    <div class="section-head"><span class="section-num">11</span><h2>PageSpeed priorities pre-migration</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
     <p class="section-note">Sorted by real priority — not by hosting-independence alone. Image dimensions/CLS are template-level fixes worth doing now; true server-config items should wait for Azure.</p>
     <div class="panel">
       <div class="priority-row hideable"><div class="stat-icon warn">!</div><div><div class="ptitle">Mobile CLS 0.36 — image dimensions missing</div><div class="pdesc">Fix now. This is a template-level fix (explicit width/height attributes), not a server setting — it carries over cleanly to Azure and improves LCP at the same time.</div></div></div>
@@ -764,7 +803,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="section-num">11</span><h2>GA4 &amp; UTM Azure migration checklist</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
+    <div class="section-head"><span class="section-num">12</span><h2>GA4 &amp; UTM Azure migration checklist</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
     <div class="panel">
       <table>
         <tr><th>Phase</th><th>Verification item</th><th>Testing framework</th><th>Status</th></tr>
@@ -778,7 +817,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="section-num">12</span><h2>Google Ads — paid search</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
+    <div class="section-head"><span class="section-num">13</span><h2>Google Ads — paid search</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
     <p class="section-note">Reach kept growing and clicks got notably cheaper — CPC dropped by a third month over month. Note: this export didn't surface exact Clicks/CTR (showed "See details" placeholders), so those two are estimated from Cost ÷ CPC below.</p>
     <div class="kpi-grid">
       <div class="kpi"><div class="kpi-label">Impressions</div><div class="kpi-val">144.9K</div><div class="kpi-delta pos">▲ +6.0% vs June (136.8K)</div></div>
@@ -826,11 +865,11 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="section-num">13</span><h2>Open items before the review meeting</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
+    <div class="section-head"><span class="section-num">14</span><h2>Open items before the review meeting</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
     <p class="section-note">Data gaps that need filling before the client's questions can be fully answered.</p>
     <div class="action-list">
       <div class="action-item hideable"><div class="dot2"></div><div>Add a visible sign-up/contact CTA to /turn-your-impact-into-growth/, the homepage, and /nedbank-fashion-accelerator-programme/ — July's top 3 pages sent zero traffic to the conversion pages.</div><div class="who">Craig / Dev</div></div>
-      <div class="action-item hideable"><div class="dot2"></div><div>Pull a fresh GA4 export with <b>Session source / medium / campaign</b> as dimensions — needed for the client's UTM report request.</div><div class="who">Craig</div></div>
+      <div class="action-item hideable"><div class="dot2"></div><div>Ask whoever distributes the /turn_your_impact_into_growth/ link whether they're consistently using the tagged version — only 54% of its traffic is currently tagged (see Section 08).</div><div class="who">Craig / Mihlali</div></div>
       <div class="action-item hideable"><div class="dot2"></div><div>Pull <b>New Users by Channel</b> breakdown to confirm the exact Organic Search figure.</div><div class="who">Craig</div></div>
       <div class="action-item hideable"><div class="dot2"></div><div>Pull the Google Ads <b>Search Terms / keyword report</b> to map paid search users to keywords and destination URLs.</div><div class="who">Craig</div></div>
       <div class="action-item hideable"><div class="dot2"></div><div>Pull <b>Meta/Paid Social spend</b> export — needed to compare cost-effectiveness against Paid Search for events.</div><div class="who">Craig</div></div>
@@ -901,14 +940,14 @@ body.edit-mode .is-hidden .hide-x{display:none;}
      exactly as before — saving locally in each person's own browser
      only, with a "Local only" badge in the control bar.
      ========================================================= */
- const firebaseConfig = {
-  apiKey: "AIzaSyCS3NvkmyPgQifNIrkiAhv8W5EvPzFjVnE",
-  authDomain: "fetola-dashboard.firebaseapp.com",
-  projectId: "fetola-dashboard",
-  storageBucket: "fetola-dashboard.firebasestorage.app",
-  messagingSenderId: "203202281317",
-  appId: "1:203202281317:web:79a5e803c42d9ec6e26b8c"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyCS3NvkmyPgQifNIrkiAhv8W5EvPzFjVnE",
+    authDomain: "fetola-dashboard.firebaseapp.com",
+    projectId: "fetola-dashboard",
+    storageBucket: "fetola-dashboard.firebasestorage.app",
+    messagingSenderId: "203202281317",
+    appId: "1:203202281317:web:79a5e803c42d9ec6e26b8c"
+  };
   const FIREBASE_DOC_PATH = ['dashboards', 'fetola-dashboard'];
   const firebaseIsConfigured = firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('YOUR_');
 
