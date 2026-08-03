@@ -92,6 +92,17 @@ h1,h2,h3,h4,.hero-number,.decisions-card h2{font-family:'Poppins',sans-serif;}
 .bar-col .bar{width:100%;border-radius:4px 4px 0 0;}
 .bar-col.may .bar{background:var(--muted2);}
 .bar-col.jun .bar{background:var(--gold);}
+.bar-col.mid .bar{background:var(--blue);}
+
+.view-toggle-wrap{display:flex;align-items:center;gap:6px;}
+.view-btn{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted);background:transparent;border:1px solid var(--border);padding:5px 11px;cursor:pointer;}
+.view-btn:first-child{border-radius:14px 0 0 14px;}
+.view-btn:last-child{border-radius:0 14px 14px 0;border-left:none;}
+.view-btn.active{background:var(--gold);color:var(--bg);font-weight:600;border-color:var(--gold);}
+
+.alltime-table-wrap{overflow-x:auto;}
+.alltime-table-wrap table{min-width:640px;}
+
 .bar-col .val{font-family:'IBM Plex Mono',monospace;font-size:10.5px;margin-bottom:6px;color:var(--text);}
 .bar-legend{display:flex;justify-content:center;gap:18px;margin-top:14px;font-size:11.5px;color:var(--text-muted);}
 .bar-legend span{display:inline-flex;align-items:center;gap:6px;}
@@ -257,6 +268,10 @@ body.edit-mode .is-hidden .hide-x{display:none;}
 </head>
 <body>
 <div class="control-bar">
+  <div class="view-toggle-wrap">
+    <button class="view-btn active" id="viewBtnMonthly" onclick="setView('monthly')">Month-over-Month</button>
+    <button class="view-btn" id="viewBtnAllTime" onclick="setView('alltime')">All-Time</button>
+  </div>
   <span class="cb-label">Edit mode</span>
   <div class="switch" id="editToggle" onclick="toggleEditMode()"><div class="knob"></div></div>
   <button class="hidden-btn" onclick="toggleTray()">Hidden (<span id="hiddenCount">0</span>)</button>
@@ -272,11 +287,149 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   <div class="header">
     <div>
       <p class="eyebrow">Diginauts · Client Performance Review</p>
-      <h1>Fetola — June 2026</h1>
-      <p class="sub">Website, search, and paid media performance, compared against May 2026. Prepared for the June review meeting.</p>
+      <h1>Fetola — July 2026</h1>
+      <p class="sub">Website, search, and paid media performance, compared against June 2026. Prepared for the July review meeting.</p>
     </div>
     <div class="period-chip">Current: <b>Jul 1 – Aug 1, 2026</b><br>vs Prior: <b>Jun 1 – Jul 1, 2026</b></div>
   </div>
+
+
+<div id="allTimeView" style="display:none;">
+  <div class="part-divider">
+    <p class="eyebrow">All-Time</p>
+    <h2>Full History — May, June &amp; July 2026</h2>
+    <div class="rule"></div>
+    <p class="sub">Everything tracked so far. This view grows each month as new data comes in.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><span class="section-num">A1</span><h2>Headline metrics, all three months</h2></div>
+    <p class="section-note">The full run so far: a steep May→June contraction, a June→July rebound, and a conversion pattern that's moved independently of traffic both times.</p>
+    <div class="alltime-table-wrap">
+    <table>
+      <tr><th>Metric</th><th class="num">May 2026</th><th class="num">June 2026</th><th class="num">July 2026</th></tr>
+      <tr><td>Total Users</td><td class="num">3,293</td><td class="num">804</td><td class="num">1,339</td></tr>
+      <tr><td>New Users</td><td class="num">2,874</td><td class="num">631</td><td class="num">1,104</td></tr>
+      <tr><td>Sessions</td><td class="num">4,791</td><td class="num">1,256</td><td class="num">2,067</td></tr>
+      <tr><td>Views</td><td class="num">7,523</td><td class="num">2,432</td><td class="num">3,996</td></tr>
+      <tr><td>Avg. Session Duration</td><td class="num">02:29</td><td class="num">03:27</td><td class="num">03:43</td></tr>
+      <tr><td>Engagement Rate</td><td class="num">59.4%</td><td class="num">58.4%</td><td class="num">60.8%</td></tr>
+      <tr><td>Conversions</td><td class="num">0</td><td class="num">14</td><td class="num">0</td></tr>
+      <tr><td>Search Console Impressions</td><td class="num">43.2K</td><td class="num">37.8K</td><td class="num">31.6K</td></tr>
+      <tr><td>Search Console Clicks</td><td class="num">847</td><td class="num">498</td><td class="num">534</td></tr>
+      <tr><td>Search Console CTR</td><td class="num">2.0%</td><td class="num">1.3%</td><td class="num">1.7%</td></tr>
+      <tr><td>Google Ads Impressions</td><td class="num">116.4K</td><td class="num">136.8K</td><td class="num">144.9K</td></tr>
+      <tr><td>Google Ads Cost</td><td class="num">R1.15K</td><td class="num">R1.13K</td><td class="num">R1.09K</td></tr>
+      <tr><td>Google Ads Avg. CPC</td><td class="num">R0.35</td><td class="num">R0.28</td><td class="num">R0.19</td></tr>
+      <tr><td>Google Ads Conversions</td><td class="num">4</td><td class="num">2</td><td class="num">2</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><span class="section-num">A2</span><h2>Traffic trend</h2></div>
+    <div class="grid-2">
+      <div class="panel">
+        <h3>Sessions &amp; Total Users</h3>
+        <p class="panel-sub">May's spike was a one-off paid/social push; June and July are the more typical range.</p>
+        <div class="bar-compare">
+          <div class="bar-metric">
+            <div class="m-label">Sessions</div>
+            <div class="bar-pair">
+              <div class="bar-col may"><div class="val">4,791</div><div class="bar" style="height:140px;"></div></div>
+              <div class="bar-col mid"><div class="val">1,256</div><div class="bar" style="height:37px;"></div></div>
+              <div class="bar-col jun"><div class="val">2,067</div><div class="bar" style="height:60px;"></div></div>
+            </div>
+          </div>
+          <div class="bar-metric">
+            <div class="m-label">Total Users</div>
+            <div class="bar-pair">
+              <div class="bar-col may"><div class="val">3,293</div><div class="bar" style="height:140px;"></div></div>
+              <div class="bar-col mid"><div class="val">804</div><div class="bar" style="height:34px;"></div></div>
+              <div class="bar-col jun"><div class="val">1,339</div><div class="bar" style="height:57px;"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="bar-legend-3"><span><span class="dot" style="background:var(--muted2)"></span>May</span><span><span class="dot" style="background:var(--blue)"></span>June</span><span><span class="dot" style="background:var(--gold)"></span>July</span></div>
+      </div>
+      <div class="panel">
+        <h3>Conversions — the real story</h3>
+        <p class="panel-sub">Conversions have moved independently of traffic volume both times — worth tracking as its own metric, not assumed to follow sessions.</p>
+        <div class="bar-compare">
+          <div class="bar-metric">
+            <div class="m-label">Conversions</div>
+            <div class="bar-pair">
+              <div class="bar-col may"><div class="val">0</div><div class="bar" style="height:2px;"></div></div>
+              <div class="bar-col mid"><div class="val">14</div><div class="bar" style="height:140px;"></div></div>
+              <div class="bar-col jun"><div class="val">0</div><div class="bar" style="height:2px;"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="bar-legend-3"><span><span class="dot" style="background:var(--muted2)"></span>May</span><span><span class="dot" style="background:var(--blue)"></span>June</span><span><span class="dot" style="background:var(--gold)"></span>July</span></div>
+        <div class="context-note">May: 0 conversions (tracking wasn't isolating this goal the same way). June: 14 conversions, concentrated on /sign-up/ and /thank-you-community/. July: back to 0 — those same two pages got zero traffic. The conversion pages need consistent traffic, not just overall site traffic, to produce results.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><span class="section-num">A3</span><h2>Search &amp; paid media trend</h2></div>
+    <div class="grid-2">
+      <div class="panel">
+        <h3>Search Console — Impressions &amp; Clicks</h3>
+        <div class="bar-compare">
+          <div class="bar-metric">
+            <div class="m-label">Impressions (K)</div>
+            <div class="bar-pair">
+              <div class="bar-col may"><div class="val">43.2K</div><div class="bar" style="height:140px;"></div></div>
+              <div class="bar-col mid"><div class="val">37.8K</div><div class="bar" style="height:123px;"></div></div>
+              <div class="bar-col jun"><div class="val">31.6K</div><div class="bar" style="height:102px;"></div></div>
+            </div>
+          </div>
+          <div class="bar-metric">
+            <div class="m-label">Clicks</div>
+            <div class="bar-pair">
+              <div class="bar-col may"><div class="val">847</div><div class="bar" style="height:140px;"></div></div>
+              <div class="bar-col mid"><div class="val">498</div><div class="bar" style="height:82px;"></div></div>
+              <div class="bar-col jun"><div class="val">534</div><div class="bar" style="height:88px;"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="bar-legend-3"><span><span class="dot" style="background:var(--muted2)"></span>May</span><span><span class="dot" style="background:var(--blue)"></span>June</span><span><span class="dot" style="background:var(--gold)"></span>July</span></div>
+        <div class="context-note">Impressions have declined three months running (43.2K → 37.8K → 31.6K) — the one metric on this page moving in a single direction the whole time. Worth a dedicated look independent of the CTR story.</div>
+      </div>
+      <div class="panel">
+        <h3>Google Ads — Impressions &amp; Cost-per-click</h3>
+        <div class="bar-compare">
+          <div class="bar-metric">
+            <div class="m-label">Impressions (K)</div>
+            <div class="bar-pair">
+              <div class="bar-col may"><div class="val">116.4K</div><div class="bar" style="height:112px;"></div></div>
+              <div class="bar-col mid"><div class="val">136.8K</div><div class="bar" style="height:132px;"></div></div>
+              <div class="bar-col jun"><div class="val">144.9K</div><div class="bar" style="height:140px;"></div></div>
+            </div>
+          </div>
+          <div class="bar-metric">
+            <div class="m-label">Avg. CPC (R)</div>
+            <div class="bar-pair">
+              <div class="bar-col may"><div class="val">R0.35</div><div class="bar" style="height:140px;"></div></div>
+              <div class="bar-col mid"><div class="val">R0.28</div><div class="bar" style="height:112px;"></div></div>
+              <div class="bar-col jun"><div class="val">R0.19</div><div class="bar" style="height:76px;"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="bar-legend-3"><span><span class="dot" style="background:var(--muted2)"></span>May</span><span><span class="dot" style="background:var(--blue)"></span>June</span><span><span class="dot" style="background:var(--gold)"></span>July</span></div>
+        <div class="context-note">The cleanest trend on the whole page: reach up every month, cost-per-click down every month, on a roughly flat budget. Three months of consistent improvement in account efficiency.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>All-time view — sources: GA4, Google Search Console, Google Ads. Covers every month tracked so far (May–July 2026); will extend automatically as more months are added.</span>
+    <span>Prepared by Diginauts</span>
+  </div>
+</div>
+
+<div id="monthlyView">
 
   <div class="hero">
     <div class="hero-card up">
@@ -683,6 +836,8 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     <div class="decision-item hideable"><span class="check">⚠</span><span><b>Paid Social vs. Paid Search cost-effectiveness:</b> still on hold until spend data is pulled.</span></div>
   </div>
 
+</div>
+
   <div class="footer">
     <span>Sources: GA4 (Audience, Acquisition, Pages), Google Search Console, Google Ads — Jul 1–Aug 1, 2026 vs Jun 1–Jul 1, 2026. PageSpeed Insights baseline from June, not yet re-tested.</span>
     <span>Prepared by Diginauts</span>
@@ -840,6 +995,28 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     applyEditMode(!document.body.classList.contains('edit-mode'));
   };
 
+  const STORAGE_VIEW = 'fetolaDash_view_v1';
+  window.setView = function(view){
+    const monthly = document.getElementById('monthlyView');
+    const alltime = document.getElementById('allTimeView');
+    const btnMonthly = document.getElementById('viewBtnMonthly');
+    const btnAllTime = document.getElementById('viewBtnAllTime');
+    if(!monthly || !alltime) return;
+    if(view === 'alltime'){
+      monthly.style.display = 'none';
+      alltime.style.display = 'block';
+      if(btnMonthly) btnMonthly.classList.remove('active');
+      if(btnAllTime) btnAllTime.classList.add('active');
+    } else {
+      monthly.style.display = 'block';
+      alltime.style.display = 'none';
+      if(btnMonthly) btnMonthly.classList.add('active');
+      if(btnAllTime) btnAllTime.classList.remove('active');
+    }
+    saveJSON(STORAGE_VIEW, view);
+    window.scrollTo({top:0, behavior:'instant'});
+  };
+
   window.resetDashboard = function(){
     if(!confirm('Reset all hidden items and edited text back to the original report?')) return;
     localStorage.removeItem(STORAGE_HIDDEN);
@@ -854,6 +1031,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     setupEditables();
     applyHidden();
     applyEditMode(loadJSON(STORAGE_MODE, false));
+    setView(loadJSON(STORAGE_VIEW, 'monthly'));
   }
 
   if(document.readyState === 'loading'){
