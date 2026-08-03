@@ -6,6 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Firebase (for shared, cross-device sync of edits/hidden items). Harmless if unconfigured — dashboard falls back to local-only saving. -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <style>
 :root{
   --bg:#0E1420; --panel:#161D2C; --panel-2:#1C2436; --border:#28324A;
@@ -208,7 +212,16 @@ td.num,th.num{text-align:right;font-family:'IBM Plex Mono',monospace;}
 .decision-item .check{color:var(--gold);flex-shrink:0;}
 
 /* Edit mode / hide controls */
-.control-bar{position:fixed;top:18px;right:18px;z-index:100;display:flex;gap:8px;align-items:center;background:var(--panel-2);border:1px solid var(--border);border-radius:30px;padding:6px 8px 6px 16px;box-shadow:0 8px 24px rgba(0,0,0,0.35);}
+.control-bar{position:fixed;top:18px;right:18px;z-index:100;display:flex;gap:8px;align-items:center;background:var(--panel-2);border:1px solid var(--border);border-radius:30px;padding:6px 8px 6px 16px;box-shadow:0 8px 24px rgba(0,0,0,0.35);max-width:calc(100vw - 36px);flex-wrap:wrap;}
+.sync-badge{font-family:'IBM Plex Mono',monospace;font-size:10.5px;display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:12px;background:var(--panel-2);border:1px solid var(--border);white-space:nowrap;}
+.sync-badge .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text-muted);}
+.sync-badge.synced{color:var(--teal-soft);}
+.sync-badge.synced .sync-dot{background:var(--teal);}
+.sync-badge.connecting{color:var(--gold-soft);}
+.sync-badge.connecting .sync-dot{background:var(--gold);animation:pulse 1.2s infinite;}
+.sync-badge.error{color:var(--rose-soft);}
+.sync-badge.error .sync-dot{background:var(--rose);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
 .control-bar .cb-label{font-size:12px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;}
 .switch{position:relative;width:38px;height:21px;background:#2A334A;border-radius:20px;cursor:pointer;transition:background .15s;flex-shrink:0;}
 .switch.on{background:var(--gold);}
@@ -276,6 +289,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   <div class="switch" id="editToggle" onclick="toggleEditMode()"><div class="knob"></div></div>
   <button class="hidden-btn" onclick="toggleTray()">Hidden (<span id="hiddenCount">0</span>)</button>
   <button class="print-btn" onclick="window.print()">Download PDF</button>
+  <span class="sync-badge" id="syncBadge"><span class="sync-dot"></span><span id="syncBadgeText">Local only</span></span>
   <button class="reset-btn" onclick="resetDashboard()">Reset</button>
 </div>
 <div class="hidden-tray" id="hiddenTray">
@@ -859,6 +873,141 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   const STORAGE_EDITS   = 'fetolaDash_edits_v3';
   const STORAGE_MODE    = 'fetolaDash_editMode_v3';
 
+  /* =========================================================
+     FIREBASE SYNC (optional — shared editing across devices/people)
+     -----------------------------------------------------------
+     1. Create a free project at https://console.firebase.google.com
+     2. Add a Web App inside it, copy the config object it gives you,
+        and paste it in place of the placeholder values below.
+     3. In the Firebase console: Build > Firestore Database > Create
+        database (production mode is fine).
+     4. In the Firebase console: Build > Authentication > Sign-in
+        method > enable "Anonymous".
+     5. Set your Firestore rules (Firestore > Rules) to:
+          rules_version = '2';
+          service cloud.firestore {
+            match /databases/{database}/documents {
+              match /dashboards/{docId} {
+                allow read, write: if request.auth != null;
+              }
+            }
+          }
+        This means: anyone who opens this HTML file can read/write
+        the shared state (since anonymous sign-in is automatic and
+        silent) — there's no login screen. That's the tradeoff for
+        keeping this simple. Don't put anything sensitive in the
+        dashboard's editable text if you're relying on this alone.
+     Until you fill in a real config below, the dashboard works
+     exactly as before — saving locally in each person's own browser
+     only, with a "Local only" badge in the control bar.
+     ========================================================= */
+ const firebaseConfig = {
+  apiKey: "AIzaSyCS3NvkmyPgQifNIrkiAhv8W5EvPzFjVnE",
+  authDomain: "fetola-dashboard.firebaseapp.com",
+  projectId: "fetola-dashboard",
+  storageBucket: "fetola-dashboard.firebasestorage.app",
+  messagingSenderId: "203202281317",
+  appId: "1:203202281317:web:79a5e803c42d9ec6e26b8c"
+};
+  const FIREBASE_DOC_PATH = ['dashboards', 'fetola-dashboard'];
+  const firebaseIsConfigured = firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('YOUR_');
+
+  let syncEnabled = false;
+  let db = null;
+  let docRef = null;
+  let applyingRemoteUpdate = false;
+  let pushTimer = null;
+
+  function setSyncBadge(state, text){
+    const badge = document.getElementById('syncBadge');
+    const label = document.getElementById('syncBadgeText');
+    if(!badge || !label) return;
+    badge.classList.remove('synced','connecting','error');
+    if(state) badge.classList.add(state);
+    label.textContent = text;
+  }
+
+  function initFirebaseSync(){
+    if(!firebaseIsConfigured){
+      setSyncBadge(null, 'Local only');
+      return;
+    }
+    if(typeof firebase === 'undefined'){
+      setSyncBadge('error', 'Firebase SDK failed to load');
+      return;
+    }
+    try{
+      setSyncBadge('connecting', 'Connecting…');
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      firebase.auth().signInAnonymously().catch(err=>{
+        console.error('Firebase auth error:', err);
+        setSyncBadge('error', 'Sign-in failed');
+      });
+      firebase.auth().onAuthStateChanged(user=>{
+        if(!user) return;
+        docRef = db.collection(FIREBASE_DOC_PATH[0]).doc(FIREBASE_DOC_PATH[1]);
+        syncEnabled = true;
+        docRef.onSnapshot(snap=>{
+          if(!snap.exists){
+            setSyncBadge('synced', 'Synced (first save)');
+            return;
+          }
+          const data = snap.data();
+          applyingRemoteUpdate = true;
+          hiddenIds = data.hiddenIds || [];
+          hiddenLabels = data.hiddenLabels || {};
+          edits = data.edits || {};
+          saveJSON(STORAGE_HIDDEN, hiddenIds);
+          saveJSON(STORAGE_LABELS, hiddenLabels);
+          saveJSON(STORAGE_EDITS, edits);
+          reapplyRemoteState();
+          applyingRemoteUpdate = false;
+          setSyncBadge('synced', 'Synced');
+        }, err=>{
+          console.error('Firebase sync error:', err);
+          setSyncBadge('error', 'Sync error — saving locally only');
+          syncEnabled = false;
+        });
+      });
+    } catch(err){
+      console.error('Firebase init error:', err);
+      setSyncBadge('error', 'Setup error — check config');
+    }
+  }
+
+  function pushToCloud(){
+    if(!syncEnabled || !docRef || applyingRemoteUpdate) return;
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(()=>{
+      docRef.set({
+        hiddenIds, hiddenLabels, edits,
+        updatedAt: new Date().toISOString()
+      }, {merge:true}).catch(err=>{
+        console.error('Firebase write error:', err);
+        setSyncBadge('error', 'Save failed — check connection');
+      });
+    }, 500);
+  }
+
+  function reapplyRemoteState(){
+    // Re-hide/restore every hideable element to match the incoming shared state
+    document.querySelectorAll('[data-hid]').forEach(el=>{
+      const hid = el.dataset.hid;
+      el.classList.toggle('is-hidden', hiddenIds.includes(hid));
+    });
+    // Re-apply edited text, but never overwrite an element the local person
+    // is actively typing in — that would yank the cursor and lose their keystroke.
+    document.querySelectorAll('[data-eid]').forEach(el=>{
+      if(el === document.activeElement) return;
+      const eid = el.dataset.eid;
+      if(edits[eid] !== undefined && el.innerHTML !== edits[eid]){
+        el.innerHTML = edits[eid];
+      }
+    });
+    renderTray();
+  }
+
   function loadJSON(key, fallback){
     try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
     catch(e){ return fallback; }
@@ -924,7 +1073,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
         el.dataset.eid = eid;
         el.setAttribute('data-editable','1');
         if(edits[eid] !== undefined){ el.innerHTML = edits[eid]; }
-        el.addEventListener('blur', ()=>{ edits[eid] = el.innerHTML; saveJSON(STORAGE_EDITS, edits); });
+        el.addEventListener('blur', ()=>{ edits[eid] = el.innerHTML; saveJSON(STORAGE_EDITS, edits); pushToCloud(); });
       });
     });
   }
@@ -943,6 +1092,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     if(!hiddenIds.includes(hid)){ hiddenIds.push(hid); hiddenLabels[hid] = label || hid; }
     saveJSON(STORAGE_HIDDEN, hiddenIds); saveJSON(STORAGE_LABELS, hiddenLabels);
     renderTray();
+    pushToCloud();
   }
 
   function restoreItem(hid){
@@ -952,6 +1102,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     delete hiddenLabels[hid];
     saveJSON(STORAGE_HIDDEN, hiddenIds); saveJSON(STORAGE_LABELS, hiddenLabels);
     renderTray();
+    pushToCloud();
   }
 
   window.hideSection = function(btn){
@@ -1018,12 +1169,21 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   };
 
   window.resetDashboard = function(){
-    if(!confirm('Reset all hidden items and edited text back to the original report?')) return;
+    const msg = syncEnabled
+      ? 'Reset all hidden items and edited text back to the original report? This clears the shared version for everyone, not just your browser.'
+      : 'Reset all hidden items and edited text back to the original report?';
+    if(!confirm(msg)) return;
     localStorage.removeItem(STORAGE_HIDDEN);
     localStorage.removeItem(STORAGE_LABELS);
     localStorage.removeItem(STORAGE_EDITS);
     localStorage.removeItem(STORAGE_MODE);
-    location.reload();
+    if(syncEnabled && docRef){
+      docRef.set({hiddenIds:[], hiddenLabels:{}, edits:{}, updatedAt:new Date().toISOString()})
+        .catch(err=>console.error('Firebase reset error:', err))
+        .finally(()=>location.reload());
+    } else {
+      location.reload();
+    }
   };
 
   function init(){
@@ -1032,6 +1192,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     applyHidden();
     applyEditMode(loadJSON(STORAGE_MODE, false));
     setView(loadJSON(STORAGE_VIEW, 'monthly'));
+    initFirebaseSync();
   }
 
   if(document.readyState === 'loading'){
