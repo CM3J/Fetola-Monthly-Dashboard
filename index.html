@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>Fetola — June 2026 Performance Review</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0E1420">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <!-- Firebase (for shared, cross-device sync of edits/hidden items). Harmless if unconfigured — dashboard falls back to local-only saving. -->
@@ -12,6 +14,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <style>
 :root{
+  color-scheme: only dark;
   --bg:#0E1420; --panel:#161D2C; --panel-2:#1C2436; --border:#28324A;
   --text:#EBEEF5; --text-muted:#8C93A8;
   --gold:#E7A83C; --gold-soft:#F0C57A;
@@ -19,6 +22,7 @@
   --rose:#E1584F; --rose-soft:#EE8A83;
   --blue:#5B8DEF; --muted2:#4A5578;
 }
+html{color-scheme: only dark;}
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
 body{
@@ -97,6 +101,7 @@ h1,h2,h3,h4,.hero-number,.decisions-card h2{font-family:'Poppins',sans-serif;}
 .bar-col.may .bar{background:var(--muted2);}
 .bar-col.jun .bar{background:var(--gold);}
 .bar-col.mid .bar{background:var(--blue);}
+.bar-col.mid2 .bar{background:var(--teal-soft);}
 
 .view-toggle-wrap{display:flex;align-items:center;gap:6px;}
 .view-btn{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted);background:transparent;border:1px solid var(--border);padding:5px 11px;cursor:pointer;}
@@ -221,6 +226,14 @@ td.num,th.num{text-align:right;font-family:'IBM Plex Mono',monospace;}
 .sync-badge.connecting .sync-dot{background:var(--gold);animation:pulse 1.2s infinite;}
 .sync-badge.error{color:var(--rose-soft);}
 .sync-badge.error .sync-dot{background:var(--rose);}
+.last-synced{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-muted);white-space:nowrap;padding-right:2px;}
+.save-btn{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--bg);background:var(--teal);border:none;border-radius:16px;padding:5px 14px;cursor:pointer;font-weight:600;}
+.save-btn:hover{background:var(--teal-soft);}
+.save-btn:disabled{background:var(--muted2);color:var(--text-muted);cursor:default;}
+body.client-mode .editor-only-controls{display:none !important;}
+body.client-mode .hide-x,body.client-mode .restore-x,body.client-mode .row-hide-x,body.client-mode .hidden-tray{display:none !important;}
+.client-badge{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-muted);padding:4px 10px;border-radius:12px;background:var(--panel-2);border:1px solid var(--border);white-space:nowrap;display:none;}
+body.client-mode .client-badge{display:inline-block;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
 .control-bar .cb-label{font-size:12px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;}
 .switch{position:relative;width:38px;height:21px;background:#2A334A;border-radius:20px;cursor:pointer;transition:background .15s;flex-shrink:0;}
@@ -285,12 +298,17 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     <button class="view-btn active" id="viewBtnMonthly" onclick="setView('monthly')">Month-over-Month</button>
     <button class="view-btn" id="viewBtnAllTime" onclick="setView('alltime')">All-Time</button>
   </div>
-  <span class="cb-label">Edit mode</span>
-  <div class="switch" id="editToggle" onclick="toggleEditMode()"><div class="knob"></div></div>
-  <button class="hidden-btn" onclick="toggleTray()">Hidden (<span id="hiddenCount">0</span>)</button>
   <button class="print-btn" onclick="window.print()">Download PDF</button>
-  <span class="sync-badge" id="syncBadge"><span class="sync-dot"></span><span id="syncBadgeText">Local only</span></span>
-  <button class="reset-btn" onclick="resetDashboard()">Reset</button>
+  <span class="client-badge">👁 Client view</span>
+  <span class="editor-only-controls" style="display:contents;">
+    <span class="cb-label">Edit mode</span>
+    <div class="switch" id="editToggle" onclick="toggleEditMode()"><div class="knob"></div></div>
+    <button class="hidden-btn" onclick="toggleTray()">Hidden (<span id="hiddenCount">0</span>)</button>
+    <span class="sync-badge" id="syncBadge"><span class="sync-dot"></span><span id="syncBadgeText">Local only</span></span>
+    <span class="last-synced" id="lastSynced">Never synced</span>
+    <button class="save-btn" id="saveBtn" onclick="manualSave()">Save</button>
+    <button class="reset-btn" onclick="resetDashboard()">Reset</button>
+  </span>
 </div>
 <div class="hidden-tray" id="hiddenTray">
   <div class="tray-title">Hidden items</div>
@@ -301,58 +319,59 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   <div class="header">
     <div>
       <p class="eyebrow">Diginauts · Client Performance Review</p>
-      <h1>Fetola — July 2026</h1>
-      <p class="sub">Website, search, and paid media performance, compared against June 2026. Prepared for the July review meeting.</p>
+      <h1>Fetola — August 2026</h1>
+      <p class="sub">Website, search, and paid media performance, compared against July 2026. Prepared for the August review meeting.</p>
     </div>
-    <div class="period-chip">Current: <b>Jul 1 – Aug 1, 2026</b><br>vs Prior: <b>Jun 1 – Jul 1, 2026</b></div>
+    <div class="period-chip">Current: <b>Aug 1 – Sep 1, 2026</b><br>vs Prior: <b>Jul 1 – Aug 1, 2026</b></div>
   </div>
 
 
 <div id="allTimeView" style="display:none;">
   <div class="part-divider">
     <p class="eyebrow">All-Time</p>
-    <h2>Full History — May, June &amp; July 2026</h2>
+    <h2>Full History — May–August 2026</h2>
     <div class="rule"></div>
     <p class="sub">Everything tracked so far. This view grows each month as new data comes in.</p>
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="section-num">A1</span><h2>Headline metrics, all three months</h2></div>
-    <p class="section-note">The full run so far: a steep May→June contraction, a June→July rebound, and a conversion pattern that's moved independently of traffic both times.</p>
+    <div class="section-head"><span class="section-num">A1</span><h2>Headline metrics, all four months</h2></div>
+    <p class="section-note">May's spike, June's contraction, July's rebound, and August's concentrated surge — four very different months.</p>
     <div class="alltime-table-wrap">
     <table>
-      <tr><th>Metric</th><th class="num">May 2026</th><th class="num">June 2026</th><th class="num">July 2026</th></tr>
-      <tr><td>Total Users</td><td class="num">3,293</td><td class="num">804</td><td class="num">1,339</td></tr>
-      <tr><td>New Users</td><td class="num">2,874</td><td class="num">631</td><td class="num">1,104</td></tr>
-      <tr><td>Sessions</td><td class="num">4,791</td><td class="num">1,256</td><td class="num">2,067</td></tr>
-      <tr><td>Views</td><td class="num">7,523</td><td class="num">2,432</td><td class="num">3,996</td></tr>
-      <tr><td>Avg. Session Duration</td><td class="num">02:29</td><td class="num">03:27</td><td class="num">03:43</td></tr>
-      <tr><td>Engagement Rate</td><td class="num">59.4%</td><td class="num">58.4%</td><td class="num">60.8%</td></tr>
-      <tr><td>Conversions</td><td class="num">0</td><td class="num">14</td><td class="num">0</td></tr>
-      <tr><td>Search Console Impressions</td><td class="num">43.2K</td><td class="num">37.8K</td><td class="num">31.6K</td></tr>
-      <tr><td>Search Console Clicks</td><td class="num">847</td><td class="num">498</td><td class="num">534</td></tr>
-      <tr><td>Search Console CTR</td><td class="num">2.0%</td><td class="num">1.3%</td><td class="num">1.7%</td></tr>
-      <tr><td>Google Ads Impressions</td><td class="num">116.4K</td><td class="num">136.8K</td><td class="num">144.9K</td></tr>
-      <tr><td>Google Ads Cost</td><td class="num">R1.15K</td><td class="num">R1.13K</td><td class="num">R1.09K</td></tr>
-      <tr><td>Google Ads Avg. CPC</td><td class="num">R0.35</td><td class="num">R0.28</td><td class="num">R0.19</td></tr>
-      <tr><td>Google Ads Conversions</td><td class="num">4</td><td class="num">2</td><td class="num">2</td></tr>
+      <tr><th>Metric</th><th class="num">May 2026</th><th class="num">June 2026</th><th class="num">July 2026</th><th class="num">August 2026</th></tr>
+      <tr><td>Total Users</td><td class="num">3,293</td><td class="num">804</td><td class="num">1,339</td><td class="num">3,200</td></tr>
+      <tr><td>New Users</td><td class="num">2,874</td><td class="num">631</td><td class="num">1,104</td><td class="num">2,635</td></tr>
+      <tr><td>Sessions</td><td class="num">4,791</td><td class="num">1,256</td><td class="num">2,067</td><td class="num">4,625</td></tr>
+      <tr><td>Views</td><td class="num">7,523</td><td class="num">2,432</td><td class="num">3,996</td><td class="num">8,175</td></tr>
+      <tr><td>Avg. Session Duration</td><td class="num">02:29</td><td class="num">03:27</td><td class="num">03:43</td><td class="num">02:59</td></tr>
+      <tr><td>Engagement Rate</td><td class="num">59.4%</td><td class="num">58.4%</td><td class="num">60.8%</td><td class="num">60.9%</td></tr>
+      <tr><td>Search Console Impressions</td><td class="num">43.2K</td><td class="num">37.8K</td><td class="num">31.6K</td><td class="num">32.9K</td></tr>
+      <tr><td>Search Console Clicks</td><td class="num">847</td><td class="num">498</td><td class="num">534</td><td class="num">603</td></tr>
+      <tr><td>Search Console CTR</td><td class="num">2.0%</td><td class="num">1.3%</td><td class="num">1.7%</td><td class="num">1.8%</td></tr>
+      <tr><td>Google Ads Impressions</td><td class="num">116.4K</td><td class="num">136.8K</td><td class="num">144.9K</td><td class="num">163.0K</td></tr>
+      <tr><td>Google Ads Cost</td><td class="num">R1.15K</td><td class="num">R1.13K</td><td class="num">R1.09K</td><td class="num">R1.09K</td></tr>
+      <tr><td>Google Ads Avg. CPC</td><td class="num">R0.35</td><td class="num">R0.28</td><td class="num">R0.19</td><td class="num">R0.18</td></tr>
+      <tr><td>UTM-tagged share of traffic</td><td class="num">—</td><td class="num">—</td><td class="num">13.7%</td><td class="num">32.3%</td></tr>
     </table>
     </div>
+    <div class="context-note">Conversions tracking was removed from this report — the underlying GA4 trigger is suspected broken (page-redirect-based, and the form flow may no longer redirect). Will be reinstated once the trigger is fixed and verified in GTM.</div>
   </div>
 
   <div class="section">
     <div class="section-head"><span class="section-num">A2</span><h2>Traffic trend</h2></div>
     <div class="grid-2">
       <div class="panel">
-        <h3>Sessions &amp; Total Users</h3>
-        <p class="panel-sub">May's spike was a one-off paid/social push; June and July are the more typical range.</p>
+        <h3>Sessions</h3>
+        <p class="panel-sub">May and August are the two outlier months — both driven by concentrated campaign pushes, not broad organic growth.</p>
         <div class="bar-compare">
           <div class="bar-metric">
             <div class="m-label">Sessions</div>
             <div class="bar-pair">
               <div class="bar-col may"><div class="val">4,791</div><div class="bar" style="height:140px;"></div></div>
               <div class="bar-col mid"><div class="val">1,256</div><div class="bar" style="height:37px;"></div></div>
-              <div class="bar-col jun"><div class="val">2,067</div><div class="bar" style="height:60px;"></div></div>
+              <div class="bar-col mid2"><div class="val">2,067</div><div class="bar" style="height:60px;"></div></div>
+              <div class="bar-col jun"><div class="val">4,625</div><div class="bar" style="height:135px;"></div></div>
             </div>
           </div>
           <div class="bar-metric">
@@ -360,27 +379,25 @@ body.edit-mode .is-hidden .hide-x{display:none;}
             <div class="bar-pair">
               <div class="bar-col may"><div class="val">3,293</div><div class="bar" style="height:140px;"></div></div>
               <div class="bar-col mid"><div class="val">804</div><div class="bar" style="height:34px;"></div></div>
-              <div class="bar-col jun"><div class="val">1,339</div><div class="bar" style="height:57px;"></div></div>
+              <div class="bar-col mid2"><div class="val">1,339</div><div class="bar" style="height:57px;"></div></div>
+              <div class="bar-col jun"><div class="val">3,200</div><div class="bar" style="height:136px;"></div></div>
             </div>
           </div>
         </div>
-        <div class="bar-legend-3"><span><span class="dot" style="background:var(--muted2)"></span>May</span><span><span class="dot" style="background:var(--blue)"></span>June</span><span><span class="dot" style="background:var(--gold)"></span>July</span></div>
+        <div class="bar-legend-3"><span><span class="dot" style="background:var(--muted2)"></span>May</span><span><span class="dot" style="background:var(--blue)"></span>June</span><span><span class="dot" style="background:var(--teal-soft)"></span>July</span><span><span class="dot" style="background:var(--gold)"></span>August</span></div>
       </div>
       <div class="panel">
-        <h3>Conversions — the real story</h3>
-        <p class="panel-sub">Conversions have moved independently of traffic volume both times — worth tracking as its own metric, not assumed to follow sessions.</p>
-        <div class="bar-compare">
-          <div class="bar-metric">
-            <div class="m-label">Conversions</div>
-            <div class="bar-pair">
-              <div class="bar-col may"><div class="val">0</div><div class="bar" style="height:2px;"></div></div>
-              <div class="bar-col mid"><div class="val">14</div><div class="bar" style="height:140px;"></div></div>
-              <div class="bar-col jun"><div class="val">0</div><div class="bar" style="height:2px;"></div></div>
-            </div>
-          </div>
+        <h3>UTM tagging discipline</h3>
+        <p class="panel-sub">Only two months of data so far, but the trend is real.</p>
+        <div class="zoom-row">
+          <div class="zoom-label"><span>July — tagged share of traffic</span><b>13.7%</b></div>
+          <div class="zoom-track"><div class="zoom-dot" style="left:13.7%;background:var(--blue);"></div></div>
         </div>
-        <div class="bar-legend-3"><span><span class="dot" style="background:var(--muted2)"></span>May</span><span><span class="dot" style="background:var(--blue)"></span>June</span><span><span class="dot" style="background:var(--gold)"></span>July</span></div>
-        <div class="context-note">May: 0 conversions (tracking wasn't isolating this goal the same way). June: 14 conversions, concentrated on /sign-up/ and /thank-you-community/. July: back to 0 — those same two pages got zero traffic. The conversion pages need consistent traffic, not just overall site traffic, to produce results.</div>
+        <div class="zoom-row">
+          <div class="zoom-label"><span>August — tagged share of traffic</span><b>32.3%</b></div>
+          <div class="zoom-track"><div class="zoom-dot" style="left:32.3%;background:var(--gold);"></div></div>
+        </div>
+        <div class="context-note">Tagged share of traffic more than doubled month over month. Started tracking this in July, so only two data points so far — worth watching whether September holds this level or reverts.</div>
       </div>
     </div>
   </div>
@@ -396,7 +413,8 @@ body.edit-mode .is-hidden .hide-x{display:none;}
             <div class="bar-pair">
               <div class="bar-col may"><div class="val">43.2K</div><div class="bar" style="height:140px;"></div></div>
               <div class="bar-col mid"><div class="val">37.8K</div><div class="bar" style="height:123px;"></div></div>
-              <div class="bar-col jun"><div class="val">31.6K</div><div class="bar" style="height:102px;"></div></div>
+              <div class="bar-col mid2"><div class="val">31.6K</div><div class="bar" style="height:102px;"></div></div>
+              <div class="bar-col jun"><div class="val">32.9K</div><div class="bar" style="height:107px;"></div></div>
             </div>
           </div>
           <div class="bar-metric">
@@ -404,12 +422,13 @@ body.edit-mode .is-hidden .hide-x{display:none;}
             <div class="bar-pair">
               <div class="bar-col may"><div class="val">847</div><div class="bar" style="height:140px;"></div></div>
               <div class="bar-col mid"><div class="val">498</div><div class="bar" style="height:82px;"></div></div>
-              <div class="bar-col jun"><div class="val">534</div><div class="bar" style="height:88px;"></div></div>
+              <div class="bar-col mid2"><div class="val">534</div><div class="bar" style="height:88px;"></div></div>
+              <div class="bar-col jun"><div class="val">603</div><div class="bar" style="height:100px;"></div></div>
             </div>
           </div>
         </div>
-        <div class="bar-legend-3"><span><span class="dot" style="background:var(--muted2)"></span>May</span><span><span class="dot" style="background:var(--blue)"></span>June</span><span><span class="dot" style="background:var(--gold)"></span>July</span></div>
-        <div class="context-note">Impressions have declined three months running (43.2K → 37.8K → 31.6K) — the one metric on this page moving in a single direction the whole time. Worth a dedicated look independent of the CTR story.</div>
+        <div class="bar-legend-3"><span><span class="dot" style="background:var(--muted2)"></span>May</span><span><span class="dot" style="background:var(--blue)"></span>June</span><span><span class="dot" style="background:var(--teal-soft)"></span>July</span><span><span class="dot" style="background:var(--gold)"></span>August</span></div>
+        <div class="context-note">Impressions fell three months running, then broke the streak in August (31.6K → 32.9K). Clicks have now grown two months straight.</div>
       </div>
       <div class="panel">
         <h3>Google Ads — Impressions &amp; Cost-per-click</h3>
@@ -417,9 +436,10 @@ body.edit-mode .is-hidden .hide-x{display:none;}
           <div class="bar-metric">
             <div class="m-label">Impressions (K)</div>
             <div class="bar-pair">
-              <div class="bar-col may"><div class="val">116.4K</div><div class="bar" style="height:112px;"></div></div>
-              <div class="bar-col mid"><div class="val">136.8K</div><div class="bar" style="height:132px;"></div></div>
-              <div class="bar-col jun"><div class="val">144.9K</div><div class="bar" style="height:140px;"></div></div>
+              <div class="bar-col may"><div class="val">116.4K</div><div class="bar" style="height:100px;"></div></div>
+              <div class="bar-col mid"><div class="val">136.8K</div><div class="bar" style="height:118px;"></div></div>
+              <div class="bar-col mid2"><div class="val">144.9K</div><div class="bar" style="height:125px;"></div></div>
+              <div class="bar-col jun"><div class="val">163.0K</div><div class="bar" style="height:140px;"></div></div>
             </div>
           </div>
           <div class="bar-metric">
@@ -427,18 +447,19 @@ body.edit-mode .is-hidden .hide-x{display:none;}
             <div class="bar-pair">
               <div class="bar-col may"><div class="val">R0.35</div><div class="bar" style="height:140px;"></div></div>
               <div class="bar-col mid"><div class="val">R0.28</div><div class="bar" style="height:112px;"></div></div>
-              <div class="bar-col jun"><div class="val">R0.19</div><div class="bar" style="height:76px;"></div></div>
+              <div class="bar-col mid2"><div class="val">R0.19</div><div class="bar" style="height:76px;"></div></div>
+              <div class="bar-col jun"><div class="val">R0.18</div><div class="bar" style="height:72px;"></div></div>
             </div>
           </div>
         </div>
-        <div class="bar-legend-3"><span><span class="dot" style="background:var(--muted2)"></span>May</span><span><span class="dot" style="background:var(--blue)"></span>June</span><span><span class="dot" style="background:var(--gold)"></span>July</span></div>
-        <div class="context-note">The cleanest trend on the whole page: reach up every month, cost-per-click down every month, on a roughly flat budget. Three months of consistent improvement in account efficiency.</div>
+        <div class="bar-legend-3"><span><span class="dot" style="background:var(--muted2)"></span>May</span><span><span class="dot" style="background:var(--blue)"></span>June</span><span><span class="dot" style="background:var(--teal-soft)"></span>July</span><span><span class="dot" style="background:var(--gold)"></span>August</span></div>
+        <div class="context-note">The single cleanest trend in this whole report: reach up and cost-per-click down, every month, four months running, on a roughly flat budget.</div>
       </div>
     </div>
   </div>
 
   <div class="footer">
-    <span>All-time view — sources: GA4, Google Search Console, Google Ads. Covers every month tracked so far (May–July 2026); will extend automatically as more months are added.</span>
+    <span>All-time view — sources: GA4, Google Search Console, Google Ads. Covers every month tracked so far (May–August 2026); will extend automatically as more months are added.</span>
     <span>Prepared by Diginauts</span>
   </div>
 </div>
@@ -448,13 +469,13 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   <div class="hero">
     <div class="hero-card up">
       <div class="hero-label">Total Sessions</div>
-      <div class="hero-number">+64.6%</div>
-      <div class="hero-detail"><b>1,256 → 2,067</b> sessions. Growth driven by a new event page and a new campaign — but none of that traffic found its way to the conversion forms this month.</div>
+      <div class="hero-number">+123.8%</div>
+      <div class="hero-detail"><b>2,067 → 4,625</b> sessions — the biggest month-over-month jump we've tracked. Nearly all of it traces to one page and one campaign.</div>
     </div>
-    <div class="hero-card down">
-      <div class="hero-label">Conversions</div>
-      <div class="hero-number">14 → 0</div>
-      <div class="hero-detail">Engagement rate still improved (+2.4pp to 60.8%) and session duration grew <b>+7.7%</b>. The pages that convert people (/sign-up/, /thank-you-community/) got zero visits in July — see Section 02.</div>
+    <div class="hero-card up">
+      <div class="hero-label">Concentration of growth</div>
+      <div class="hero-number">71%</div>
+      <div class="hero-detail"><b>/masisizane-ir-programme/</b> alone gained 1,851 sessions — 71% of August's entire growth — driven by a new "Sign-up-campaign" tag across email and Facebook. See Sections 02 &amp; 08.</div>
     </div>
   </div>
 
@@ -462,128 +483,132 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     <p class="eyebrow">Part 01</p>
     <h2>Performance Diagnostics</h2>
     <div class="rule"></div>
-    <p class="sub">July 2026 vs. June 2026 — GA4 &amp; Search Console analysis</p>
+    <p class="sub">August 2026 vs. July 2026 — GA4 &amp; Search Console analysis</p>
   </div>
 
   <div class="section">
     <div class="section-head"><span class="section-num">01</span><h2>Audience overview</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
     <div class="kpi-grid">
-      <div class="kpi"><div class="kpi-label">Total Users</div><div class="kpi-val">1,339</div><div class="kpi-delta pos">▲ 66.5% vs June (804)</div></div>
-      <div class="kpi"><div class="kpi-label">New Users</div><div class="kpi-val">1,104</div><div class="kpi-delta pos">▲ 75.0% vs June (631)</div></div>
-      <div class="kpi"><div class="kpi-label">Sessions</div><div class="kpi-val">2,067</div><div class="kpi-delta pos">▲ 64.6% vs June (1,256)</div></div>
-      <div class="kpi"><div class="kpi-label">Views</div><div class="kpi-val">3,996</div><div class="kpi-delta pos">▲ 64.3% vs June (2,432)</div></div>
-      <div class="kpi"><div class="kpi-label">Avg. Session</div><div class="kpi-val">03:43</div><div class="kpi-delta pos">▲ +16s vs June (03:27)</div></div>
-      <div class="kpi"><div class="kpi-label">Engagement Rate</div><div class="kpi-val">60.8%</div><div class="kpi-delta pos">▲ +2.4pp vs June (58.4%)</div></div>
+      <div class="kpi"><div class="kpi-label">Total Users</div><div class="kpi-val">3,200</div><div class="kpi-delta pos">▲ 139.0% vs July (1,339)</div></div>
+      <div class="kpi"><div class="kpi-label">New Users</div><div class="kpi-val">2,635</div><div class="kpi-delta pos">▲ 138.7% vs July (1,104)</div></div>
+      <div class="kpi"><div class="kpi-label">Sessions</div><div class="kpi-val">4,625</div><div class="kpi-delta pos">▲ 123.8% vs July (2,067)</div></div>
+      <div class="kpi"><div class="kpi-label">Views</div><div class="kpi-val">8,175</div><div class="kpi-delta pos">▲ 104.6% vs July (3,996)</div></div>
+      <div class="kpi"><div class="kpi-label">Avg. Session</div><div class="kpi-val">02:59</div><div class="kpi-delta neg">▼ −44s vs July (03:43)</div></div>
+      <div class="kpi"><div class="kpi-label">Engagement Rate</div><div class="kpi-val">60.9%</div><div class="kpi-delta flat">≈ flat vs July (60.8%)</div></div>
     </div>
     <div style="height:20px;"></div>
     <div class="grid-2">
       <div class="panel">
-        <h3>Sessions, June vs July</h3>
-        <p class="panel-sub">Volume rebounded sharply — but the rebound didn't reach the conversion pages.</p>
+        <h3>Sessions, July vs August</h3>
+        <p class="panel-sub">The largest month-over-month jump we've tracked — driven almost entirely by one page.</p>
         <div class="bar-compare">
           <div class="bar-metric">
             <div class="m-label">Sessions</div>
             <div class="bar-pair">
-              <div class="bar-col may"><div class="val">1,256</div><div class="bar" style="height:85px;"></div></div>
-              <div class="bar-col jun"><div class="val">2,067</div><div class="bar" style="height:140px;"></div></div>
+              <div class="bar-col may"><div class="val">2,067</div><div class="bar" style="height:63px;"></div></div>
+              <div class="bar-col jun"><div class="val">4,625</div><div class="bar" style="height:140px;"></div></div>
             </div>
           </div>
           <div class="bar-metric">
             <div class="m-label">Total Users</div>
             <div class="bar-pair">
-              <div class="bar-col may"><div class="val">804</div><div class="bar" style="height:84px;"></div></div>
-              <div class="bar-col jun"><div class="val">1,339</div><div class="bar" style="height:140px;"></div></div>
+              <div class="bar-col may"><div class="val">1,339</div><div class="bar" style="height:59px;"></div></div>
+              <div class="bar-col jun"><div class="val">3,200</div><div class="bar" style="height:140px;"></div></div>
             </div>
           </div>
           <div class="bar-metric">
             <div class="m-label">Views</div>
             <div class="bar-pair">
-              <div class="bar-col may"><div class="val">2,432</div><div class="bar" style="height:85px;"></div></div>
-              <div class="bar-col jun"><div class="val">3,996</div><div class="bar" style="height:140px;"></div></div>
+              <div class="bar-col may"><div class="val">3,996</div><div class="bar" style="height:68px;"></div></div>
+              <div class="bar-col jun"><div class="val">8,175</div><div class="bar" style="height:140px;"></div></div>
             </div>
           </div>
         </div>
-        <div class="bar-legend"><span><span class="dot" style="background:var(--muted2)"></span>June</span><span><span class="dot" style="background:var(--gold)"></span>July</span></div>
-        <div class="context-note">Every volume metric grew by roughly the same proportion (~64–66%) — a mirror image of June's uniform decline. That consistency again points to specific pages/campaigns (this time switching on, not off) rather than a broad shift in site appeal. See Section 02 for which pages drove it.</div>
+        <div class="bar-legend"><span><span class="dot" style="background:var(--muted2)"></span>July</span><span><span class="dot" style="background:var(--gold)"></span>August</span></div>
+        <div class="context-note">Unlike June and July's broad, roughly-uniform swings, this jump is concentrated: one page (/masisizane-ir-programme/) accounts for 71% of it. See Section 02.</div>
       </div>
       <div class="panel">
-        <h3>Device split — July</h3>
-        <p class="panel-sub">Mobile share eased further, from 62% (June) to 58% — worth keeping an eye on given the mobile Core Web Vitals issues in Part 03.</p>
+        <h3>Device split — August</h3>
+        <p class="panel-sub">Mobile share reversed course — back up to 67% after two months of decline (75% → 62% → 58% → 67%).</p>
         <div class="donut-wrap">
-          <div class="donut" style="background:conic-gradient(var(--gold) 0% 58.2%, var(--teal) 58.2% 99.4%, var(--muted2) 99.4% 100%);"></div>
+          <div class="donut" style="background:conic-gradient(var(--gold) 0% 66.8%, var(--teal) 66.8% 99.5%, var(--muted2) 99.5% 100%);"></div>
           <div class="donut-legend">
-            <div class="leg-row"><span class="dot" style="background:var(--gold)"></span><span class="leg-label">Mobile</span><span class="leg-val">58.2%</span></div>
-            <div class="leg-row"><span class="dot" style="background:var(--teal)"></span><span class="leg-label">Desktop</span><span class="leg-val">41.2%</span></div>
-            <div class="leg-row"><span class="dot" style="background:var(--muted2)"></span><span class="leg-label">Tablet</span><span class="leg-val">0.6%</span></div>
+            <div class="leg-row"><span class="dot" style="background:var(--gold)"></span><span class="leg-label">Mobile</span><span class="leg-val">66.8%</span></div>
+            <div class="leg-row"><span class="dot" style="background:var(--teal)"></span><span class="leg-label">Desktop</span><span class="leg-val">32.7%</span></div>
+            <div class="leg-row"><span class="dot" style="background:var(--muted2)"></span><span class="leg-label">Tablet</span><span class="leg-val">0.5%</span></div>
           </div>
         </div>
-        <div class="context-note">Mobile share has now fallen for two months straight (75% in May → 62% in June → 58% in July). Desktop is steadily taking a larger slice of the audience, which somewhat reduces the urgency of the mobile Core Web Vitals fixes — but 58% is still a majority, so they remain worth doing.</div>
+        <div class="context-note">Makes sense given the source: email and Facebook (the "Sign-up-campaign" tags, see Section 08) skew heavily mobile. Worth re-flagging the mobile Core Web Vitals fixes — see Part 03 for August's PageSpeed re-test.</div>
       </div>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="section-num">02</span><h2>Why traffic rebounded — and where the conversions went</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
-    <p class="section-note">Three pages account for 99.5% of the entire session gain. Verified independently against the raw GA4 export.</p>
+    <div class="section-head"><span class="section-num">02</span><h2>Why traffic surged in August</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
+    <p class="section-note">One page accounts for 71% of the entire session gain. Verified independently against the raw GA4 export.</p>
     <div class="grid-2">
       <div class="panel">
-        <h3>Session gain by page, June → July</h3>
-        <p class="panel-sub">+809 sessions total site-wide</p>
-        <div class="loss-row hideable"><div class="loss-name">/…turn-your-impact-into-growth/</div><div class="loss-bar-track"><div class="loss-bar-fill" style="width:100%;background:linear-gradient(90deg,var(--teal),var(--teal-soft));"></div></div><div class="loss-val" style="color:var(--teal-soft);">+389</div></div>
-        <div class="loss-row hideable"><div class="loss-name">/ (Homepage)</div><div class="loss-bar-track"><div class="loss-bar-fill" style="width:68.6%;background:linear-gradient(90deg,var(--teal),var(--teal-soft));"></div></div><div class="loss-val" style="color:var(--teal-soft);">+267</div></div>
-        <div class="loss-row hideable"><div class="loss-name">/nedbank-fashion-accelerator…</div><div class="loss-bar-track"><div class="loss-bar-fill" style="width:38.3%;background:linear-gradient(90deg,var(--teal),var(--teal-soft));"></div></div><div class="loss-val" style="color:var(--teal-soft);">+149</div></div>
-        <div class="loss-row hideable"><div class="loss-name">Rest of site (60 pages)</div><div class="loss-bar-track"><div class="loss-bar-fill" style="width:1%;background:linear-gradient(90deg,#4A5578,#8C93A8);"></div></div><div class="loss-val" style="color:var(--text-muted);">+4</div></div>
+        <h3>Session gain by page, July → August</h3>
+        <p class="panel-sub">+2,594 sessions total site-wide</p>
+        <div class="loss-row hideable"><div class="loss-name">/masisizane-ir-programme/</div><div class="loss-bar-track"><div class="loss-bar-fill" style="width:100%;background:linear-gradient(90deg,var(--teal),var(--teal-soft));"></div></div><div class="loss-val" style="color:var(--teal-soft);">+1,851</div></div>
+        <div class="loss-row hideable"><div class="loss-name">/…get-your-product-ready…</div><div class="loss-bar-track"><div class="loss-bar-fill" style="width:22.7%;background:linear-gradient(90deg,var(--teal),var(--teal-soft));"></div></div><div class="loss-val" style="color:var(--teal-soft);">+421</div></div>
+        <div class="loss-row hideable"><div class="loss-name">/nedbank-fashion-accelerator…</div><div class="loss-bar-track"><div class="loss-bar-fill" style="width:22.6%;background:linear-gradient(90deg,var(--teal),var(--teal-soft));"></div></div><div class="loss-val" style="color:var(--teal-soft);">+419</div></div>
+        <div class="loss-row hideable"><div class="loss-name">/…turn-your-impact-into-growth/</div><div class="loss-bar-track"><div class="loss-bar-fill" style="width:20.9%;background:linear-gradient(90deg,var(--rose),var(--rose-soft));"></div></div><div class="loss-val">−386</div></div>
+        <div class="loss-row hideable"><div class="loss-name">Rest of site</div><div class="loss-bar-track"><div class="loss-bar-fill" style="width:15.9%;background:linear-gradient(90deg,#4A5578,#8C93A8);"></div></div><div class="loss-val" style="color:var(--teal-soft);">+289</div></div>
         <div class="callout good hideable">
-          <b>Same pattern as June, in reverse:</b> June's own star event page (/fetola_events/start-with-what-you-have/) rotated out almost entirely — 182 sessions down to 2 — right as a new one (/turn-your-impact-into-growth/) took over. Confirms the Section 05 finding: specific event pages have a short lifecycle, and campaigns need to keep rotating to a fresh one, not the generic hub.
+          <b>Third month running, same pattern:</b> July's star event page (/turn-your-impact-into-growth/) rotated out almost entirely — 404 sessions down to 18 — right as a new one took over. This is now a reliable, repeating cycle, not a one-off.
         </div>
       </div>
       <div class="panel">
-        <h3>Where did the conversion pages go?</h3>
-        <p class="panel-sub">This is the direct cause of the conversion collapse — not a tracking issue.</p>
+        <h3>What's actually driving /masisizane-ir-programme/</h3>
+        <p class="panel-sub">A new campaign, not organic interest — full breakdown in Section 08.</p>
         <table>
-          <tr><th>Page</th><th class="num">June sessions</th><th class="num">July sessions</th></tr>
-          <tr><td>/sign-up/</td><td class="num">10</td><td class="num">0</td></tr>
-          <tr><td>/thank-you-community/</td><td class="num">5</td><td class="num">0</td></tr>
+          <tr><th>Source</th><th class="num">Sessions to this page</th></tr>
+          <tr><td>Email ("Sign-up-campaign")</td><td class="num">929</td></tr>
+          <tr><td>Facebook ("Sign-up-campaign")</td><td class="num">324</td></tr>
+          <tr><td>Website banner</td><td class="num">7</td></tr>
+          <tr><td>All other tagged sources</td><td class="num">5</td></tr>
         </table>
-        <div class="callout bad hideable">
-          <b>Confirmed:</b> the two pages that produced all 14 of June's conversions got zero sessions in July. All of July's growth landed on top-of-funnel pages (a new event, the homepage, a new programme) — none of it reached the actual sign-up flow. This isn't a broken conversion tag; nobody arrived at the page that contains the form.
+        <div class="callout warn hideable">
+          <b>Worth knowing before the meeting:</b> about 69% of this page's traffic (1,265 of 1,863 sessions) is directly traceable to one deliberate email + Facebook push. This is a marketing-driven spike, not organic/SEO growth — good to know so it's not mistaken for a durable trend when planning next month.
         </div>
       </div>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="section-num">03</span><h2>Acquisition channels — July</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
-    <p class="section-note">Every channel converted at 0% in July — Direct and Organic Search kept their strong engagement rates from June, but none of it turned into a completed sign-up. See Section 02 for why.</p>
+    <div class="section-head"><span class="section-num">03</span><h2>Acquisition channels — August</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
+    <p class="section-note">Email jumped to the #2 channel this month (1,014 sessions, up from a much smaller share in July) — almost entirely the Sign-up-campaign push into /masisizane-ir-programme/.</p>
     <div class="grid-2">
       <div class="panel">
         <h3>Channel share of sessions</h3>
         <div class="donut-wrap">
-          <div class="donut" style="background:conic-gradient(var(--gold) 0% 31.83%, var(--teal) 31.83% 55.15%, var(--blue) 55.15% 75.86%, var(--teal-soft) 75.86% 92.26%, var(--muted2) 92.26% 96.57%, var(--rose-soft) 96.57% 97.82%, #3A4560 97.82% 98.69%, var(--border) 98.69% 100%);"></div>
+          <div class="donut" style="background:conic-gradient(var(--gold) 0% 32.50%, var(--teal) 32.50% 54.30%, var(--teal-soft) 54.30% 70.83%, var(--blue) 70.83% 82.55%, var(--rose-soft) 82.55% 93.16%, var(--muted2) 93.16% 96.43%, #3A4560 96.43% 98.97%, var(--border) 98.97% 100%);"></div>
           <div class="donut-legend">
-            <div class="leg-row"><span class="dot" style="background:var(--gold)"></span><span class="leg-label">Direct</span><span class="leg-val">658</span></div>
-            <div class="leg-row"><span class="dot" style="background:var(--teal)"></span><span class="leg-label">Organic Search</span><span class="leg-val">482</span></div>
-            <div class="leg-row"><span class="dot" style="background:var(--blue)"></span><span class="leg-label">Paid Search</span><span class="leg-val">428</span></div>
-            <div class="leg-row"><span class="dot" style="background:var(--teal-soft)"></span><span class="leg-label">Organic Social</span><span class="leg-val">339</span></div>
-            <div class="leg-row"><span class="dot" style="background:var(--muted2)"></span><span class="leg-label">Referral</span><span class="leg-val">89</span></div>
-            <div class="leg-row"><span class="dot" style="background:var(--rose-soft)"></span><span class="leg-label">Unassigned</span><span class="leg-val">26</span></div>
-            <div class="leg-row"><span class="dot" style="background:#3A4560"></span><span class="leg-label">Display</span><span class="leg-val">18</span></div>
-            <div class="leg-row"><span class="dot" style="background:var(--border)"></span><span class="leg-label">AI Assistant + Other</span><span class="leg-val">27</span></div>
+            <div class="leg-row"><span class="dot" style="background:var(--gold)"></span><span class="leg-label">Direct</span><span class="leg-val">1,512</span></div>
+            <div class="leg-row"><span class="dot" style="background:var(--teal)"></span><span class="leg-label">Email</span><span class="leg-val">1,014</span></div>
+            <div class="leg-row"><span class="dot" style="background:var(--teal-soft)"></span><span class="leg-label">Organic Social</span><span class="leg-val">769</span></div>
+            <div class="leg-row"><span class="dot" style="background:var(--blue)"></span><span class="leg-label">Organic Search</span><span class="leg-val">545</span></div>
+            <div class="leg-row"><span class="dot" style="background:var(--rose-soft)"></span><span class="leg-label">Paid Search</span><span class="leg-val">494</span></div>
+            <div class="leg-row"><span class="dot" style="background:var(--muted2)"></span><span class="leg-label">Unassigned</span><span class="leg-val">152</span></div>
+            <div class="leg-row"><span class="dot" style="background:#3A4560"></span><span class="leg-label">Referral</span><span class="leg-val">118</span></div>
+            <div class="leg-row"><span class="dot" style="background:var(--border)"></span><span class="leg-label">Paid Social + Other</span><span class="leg-val">~75</span></div>
           </div>
         </div>
       </div>
       <div class="panel">
         <h3>Channel performance detail</h3>
         <table>
-          <tr><th>Channel</th><th class="num">Sessions</th><th class="num">Eng. rate</th><th class="num">Conv.</th></tr>
-          <tr><td>Direct</td><td class="num">658</td><td class="num">54.4%</td><td class="num">0</td></tr>
-          <tr><td>Organic Search</td><td class="num">482</td><td class="num">68.5%</td><td class="num">0</td></tr>
-          <tr><td>Paid Search</td><td class="num">428</td><td class="num">67.3%</td><td class="num">0</td></tr>
-          <tr><td>Organic Social</td><td class="num">339</td><td class="num">57.8%</td><td class="num">0</td></tr>
-          <tr><td>Referral</td><td class="num">89</td><td class="num">51.7%</td><td class="num">0</td></tr>
-          <tr><td>Unassigned</td><td class="num">26</td><td class="num">11.5%</td><td class="num">0</td></tr>
-          <tr><td>Display</td><td class="num">18</td><td class="num">61.1%</td><td class="num">0</td></tr>
+          <tr><th>Channel</th><th class="num">Sessions</th><th class="num">Eng. rate</th></tr>
+          <tr><td>Direct</td><td class="num">1,512</td><td class="num">60.2%</td></tr>
+          <tr><td>Email</td><td class="num">1,014</td><td class="num">55.3%</td></tr>
+          <tr><td>Organic Social</td><td class="num">769</td><td class="num">68.1%</td></tr>
+          <tr><td>Organic Search</td><td class="num">545</td><td class="num">63.7%</td></tr>
+          <tr><td>Paid Search</td><td class="num">494</td><td class="num">67.0%</td></tr>
+          <tr><td>Unassigned</td><td class="num">152</td><td class="num">20.4%</td></tr>
+          <tr><td>Referral</td><td class="num">118</td><td class="num">62.7%</td></tr>
         </table>
+        <div class="context-note">Table shows the 7 largest of 10 channels — GA4's table cut off the remaining 2 (likely AI Assistant and Display, both small). Their combined share is under 2%.</div>
       </div>
     </div>
   </div>
@@ -591,50 +616,50 @@ body.edit-mode .is-hidden .hide-x{display:none;}
 
   <div class="section">
     <div class="section-head"><span class="section-num">04</span><h2>Search Console — organic search performance</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
-    <p class="section-note">Good news on the CTR compression flagged last month — but impressions are now down two months running, worth watching.</p>
+    <p class="section-note">The impressions decline broke this month — all three metrics moved the right direction.</p>
     <div class="kpi-grid">
-      <div class="kpi"><div class="kpi-label">Impressions</div><div class="kpi-val">31.6K</div><div class="kpi-delta neg">▼ 16.4% vs June (37.8K)</div></div>
-      <div class="kpi"><div class="kpi-label">URL Clicks</div><div class="kpi-val">534</div><div class="kpi-delta pos">▲ 7.2% vs June (498)</div></div>
-      <div class="kpi"><div class="kpi-label">URL CTR</div><div class="kpi-val">1.7%</div><div class="kpi-delta pos">▲ 30.8% vs June (1.3%)</div></div>
+      <div class="kpi"><div class="kpi-label">Impressions</div><div class="kpi-val">32.9K</div><div class="kpi-delta pos">▲ 4.1% vs July (31.6K)</div></div>
+      <div class="kpi"><div class="kpi-label">URL Clicks</div><div class="kpi-val">603</div><div class="kpi-delta pos">▲ 12.9% vs July (534)</div></div>
+      <div class="kpi"><div class="kpi-label">URL CTR</div><div class="kpi-val">1.8%</div><div class="kpi-delta pos">▲ 5.9% vs July (1.7%)</div></div>
     </div>
     <div style="height:20px;"></div>
     <div class="grid-2">
       <div class="panel">
-        <h3>CTR recovered even as impressions kept easing</h3>
-        <p class="panel-sub">Fewer people seeing Fetola in search — but a much higher share of them clicking through.</p>
+        <h3>First all-green month for Search Console</h3>
+        <p class="panel-sub">Impressions, clicks, and CTR all improved together for the first time since we've been tracking.</p>
         <div class="bar-compare">
           <div class="bar-metric">
             <div class="m-label">Impressions (K)</div>
             <div class="bar-pair">
-              <div class="bar-col may"><div class="val">37.8K</div><div class="bar" style="height:140px;"></div></div>
-              <div class="bar-col jun"><div class="val">31.6K</div><div class="bar" style="height:117px;"></div></div>
+              <div class="bar-col may"><div class="val">31.6K</div><div class="bar" style="height:134px;"></div></div>
+              <div class="bar-col jun"><div class="val">32.9K</div><div class="bar" style="height:140px;"></div></div>
             </div>
           </div>
           <div class="bar-metric">
             <div class="m-label">URL Clicks</div>
             <div class="bar-pair">
-              <div class="bar-col may"><div class="val">498</div><div class="bar" style="height:131px;"></div></div>
-              <div class="bar-col jun"><div class="val">534</div><div class="bar" style="height:140px;"></div></div>
+              <div class="bar-col may"><div class="val">534</div><div class="bar" style="height:124px;"></div></div>
+              <div class="bar-col jun"><div class="val">603</div><div class="bar" style="height:140px;"></div></div>
             </div>
           </div>
         </div>
-        <div class="bar-legend"><span><span class="dot" style="background:var(--muted2)"></span>June</span><span><span class="dot" style="background:var(--gold)"></span>July</span></div>
+        <div class="bar-legend"><span><span class="dot" style="background:var(--muted2)"></span>July</span><span><span class="dot" style="background:var(--gold)"></span>August</span></div>
         <div class="callout good hideable">
-          <b>The CTR compression from last month reversed:</b> CTR climbed from 1.3% to 1.7% (+30.8%), and clicks grew slightly even on fewer impressions. Whatever was hurting click-through in June didn't carry into July. The one thing still worth watching: impressions have now fallen two months running (43.2K → 37.8K → 31.6K) — worth keeping an eye on heading into the migration, since that's a separate question from CTR.
+          <b>The two-month impressions slide broke:</b> 43.2K → 37.8K → 31.6K → 32.9K. Clicks are up the most (+12.9%), meaning both visibility and click-through improved together — the first month all three SC metrics have moved the same direction since we started tracking this.
         </div>
       </div>
       <div class="panel">
-        <h3>Top landing pages by impressions — July</h3>
+        <h3>Top landing pages by impressions — August</h3>
         <table>
           <tr><th>Page</th><th class="num">CTR</th></tr>
-          <tr><td>/</td><td class="num">5.98%</td></tr>
-          <tr><td>/entrepreneurs/funding/nedbank…</td><td class="num">3.97%</td></tr>
-          <tr><td>/careers/</td><td class="num">3.91%</td></tr>
-          <tr><td>/entrepreneurs/funding/</td><td class="num">1.62%</td></tr>
-          <tr><td>/programmes/</td><td class="num">1.64%</td></tr>
-          <tr><td>/about-us/</td><td class="num">1.23%</td></tr>
+          <tr><td>/</td><td class="num">5.34%</td></tr>
+          <tr><td>/entrepreneurs/funding/nedbank…</td><td class="num">4.56%</td></tr>
+          <tr><td>/careers/</td><td class="num">2.38%</td></tr>
+          <tr><td>/entrepreneurs/funding/</td><td class="num">1.97%</td></tr>
+          <tr><td>/programmes/</td><td class="num">1.56%</td></tr>
+          <tr><td>/about-us/</td><td class="num">0.91%</td></tr>
         </table>
-        <div class="context-note">Top queries: <b>fetola</b> (2.78% CTR, avg. position 1.6) and <b>fetola foundation</b> (3.22% CTR, position 1.05) lead. Branded variants — "fetola your future/business/impact" — still sit at 0% CTR around position 46–54, same pattern as June; these still aren't ranking well enough to earn clicks.</div>
+        <div class="context-note">Top queries: <b>fetola</b> (3.25% CTR, avg. position 1.43) leads, with <b>fetola funding</b> close behind (2.41% CTR, position 5.89). Branded variants — "fetola your future/business/impact" — still sit at 0% CTR around position 50–53, same pattern for three months running; these still aren't ranking well enough to earn clicks.</div>
       </div>
     </div>
   </div>
@@ -647,17 +672,17 @@ body.edit-mode .is-hidden .hide-x{display:none;}
 
   <div class="section" id="sec-events">
     <div class="section-head"><span class="section-num">05</span><h2>Events hub vs. specific campaigns</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
-    <p class="section-note">Same pattern holds a second month running — verified directly against the July export.</p>
+    <p class="section-note">Same pattern holds a third month running — verified directly against the August export.</p>
     <div class="compare-grid">
       <div class="compare-card hideable">
         <div class="kicker">Events hub performance</div>
         <h4>The generic /events/ directory is still dead weight</h4>
-        <p>The bare <b>/events/</b> hub page pulled just <b>6 sessions</b> in July (up slightly from 1 in June, still negligible). Visitors don't browse a calendar listing organically — they land on the specific event page they were pointed to, or they don't land at all.</p>
+        <p>The bare <b>/events/</b> hub page pulled <b>11 sessions</b> in August — creeping up slightly each month (1 → 6 → 11) but still negligible next to what a tagged, specific event page pulls on its own.</p>
       </div>
       <div class="compare-card hideable">
         <div class="kicker">Direct webinar targeting</div>
-        <h4>Specific event pages keep working — but rotate fast</h4>
-        <p>June's top event page (<b>/start-with-what-you-have/</b>, 182 sessions) dropped to just 2 sessions in July, replaced almost exactly by a new one: <b>/turn-your-impact-into-growth/</b> pulled <b>404 sessions</b> on its own. The tactic works — but each specific event page has a short shelf life and needs a fresh one lined up monthly.</p>
+        <h4>Third rotation, same result</h4>
+        <p>July's top event page (<b>/turn-your-impact-into-growth/</b>, 404 sessions) dropped to 18 in August, replaced by <b>/get-your-product-ready-for-retail-buyers/</b>, which pulled <b>421 sessions</b> on its own. Three months, three different event pages, the same lifecycle each time — this is now a reliable pattern to plan around, not a one-off.</p>
       </div>
     </div>
   </div>
@@ -681,45 +706,43 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   <div class="section" id="sec-paidmedia">
     <div class="section-head"><span class="section-num">07</span><h2>Paid media for events</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
     <div class="panel hideable">
-      <p style="margin:0;color:var(--text);font-size:14px;">Google Ads delivered <b>428 sessions and 286 users</b> in July at strong <b>67.3% engagement</b> — consistent with June, though the traffic still mostly lands on the Homepage and Programmes page rather than specific event pages. We still don't have equivalent access to Paid Social spend and performance data, so we can't fairly compare cost-effectiveness between the two channels for events yet — that's still the next data pull.</p>
+      <p style="margin:0;color:var(--text);font-size:14px;">Google Ads (Paid Search channel) delivered <b>494 sessions and 300 users</b> in August at strong <b>67.0% engagement</b> — consistent with the last two months, though the traffic still mostly lands on the Homepage rather than specific event pages. We still don't have equivalent access to Paid Social spend and performance data, so we can't fairly compare cost-effectiveness between the two channels for events yet — that's still the next data pull.</p>
     </div>
   </div>
 
   <div class="section" id="sec-utm">
-    <div class="section-head"><span class="section-num">08</span><h2>UTM tagging coverage — July</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
-    <p class="section-note">This finally answers the client's original UTM request — and corrects something we got wrong earlier in this report.</p>
-    <div class="callout good hideable">
-      <b>Correction:</b> earlier sections of this dashboard stated no real UTM tagging was happening, based on the page-level exports we were using — those only ever showed Facebook's automatic <code>fbclid</code> parameter, never manual tags. A proper Session Source/Medium/Campaign export proves that was wrong: real, deliberate UTM tagging <b>is</b> happening — it just wasn't visible in the report type we'd been pulling.
-    </div>
+    <div class="section-head"><span class="section-num">08</span><h2>UTM tagging coverage — August</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
+    <p class="section-note">Tagging discipline jumped sharply this month — driven by one well-targeted campaign.</p>
     <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
-      <div class="kpi"><div class="kpi-label">UTM-tagged sessions</div><div class="kpi-val">283</div><div class="kpi-delta flat">of 2,067 total July sessions</div></div>
-      <div class="kpi"><div class="kpi-label">Share of traffic tagged</div><div class="kpi-val">13.7%</div><div class="kpi-delta flat">86.3% arrives untagged (direct, organic, etc.)</div></div>
-      <div class="kpi"><div class="kpi-label">Event page tagging coverage</div><div class="kpi-val">54%</div><div class="kpi-delta flat">218 of 404 sessions to the event page</div></div>
+      <div class="kpi"><div class="kpi-label">UTM-tagged sessions</div><div class="kpi-val">1,494</div><div class="kpi-delta pos">▲ from 283 in July</div></div>
+      <div class="kpi"><div class="kpi-label">Share of traffic tagged</div><div class="kpi-val">32.3%</div><div class="kpi-delta pos">▲ from 13.7% in July</div></div>
+      <div class="kpi"><div class="kpi-label">"Sign-up-campaign" coverage</div><div class="kpi-val">68%</div><div class="kpi-delta flat">1,265 of 1,863 sessions to its target page</div></div>
     </div>
     <div style="height:20px;"></div>
     <div class="grid-2">
       <div class="panel">
         <h3>What's actually tagged</h3>
-        <p class="panel-sub">Two coordinated campaigns account for nearly everything tagged.</p>
+        <p class="panel-sub">One new campaign dwarfs everything else this month.</p>
         <table>
           <tr><th>Source / Medium</th><th>Campaign</th><th class="num">Sessions</th></tr>
-          <tr><td>facebook / organic_social</td><td>turn_your_impact_into_growth</td><td class="num">152</td></tr>
-          <tr><td>instagram / organic_social</td><td>turn_your_impact_into_growth</td><td class="num">33</td></tr>
-          <tr><td>tiktok / organic_social</td><td>turn_your_impact_into_growth</td><td class="num">32</td></tr>
-          <tr><td>website / banner</td><td>booking_com_fetola</td><td class="num">18</td></tr>
-          <tr><td>webinar_deck / referral</td><td>booking_com_webinar</td><td class="num">16</td></tr>
-          <tr><td>email / email</td><td>booking_com_fetola</td><td class="num">9</td></tr>
-          <tr><td>brochure / qr_code</td><td>booking_com_travelshow</td><td class="num">4</td></tr>
+          <tr><td>email / email</td><td>Sign-up-campaign</td><td class="num">994</td></tr>
+          <tr><td>facebook / organic_social</td><td>Sign-up-campaign</td><td class="num">346</td></tr>
+          <tr><td>banner / Website</td><td>Sign-up-campaign</td><td class="num">47</td></tr>
+          <tr><td>various / fb paid</td><td>(Meta auto-tagged)</td><td class="num">40</td></tr>
+          <tr><td>website + email + whatsapp</td><td>booking_com_fetola</td><td class="num">26</td></tr>
+          <tr><td>facebook + instagram</td><td>turn_your_impact_into_growth</td><td class="num">15</td></tr>
         </table>
-        <div class="context-note">The <b>booking_com_*</b> cluster (52 sessions total) shows real cross-channel discipline — banner, email, WhatsApp, a webinar deck referral link, even a QR code on a printed brochure all carrying the same coordinated tag. Worth telling the client this part is working well. The handful of <code>fb / paid</code> rows with long numeric campaign IDs are Meta's own automatic ad-tagging, not manual UTMs — excluded from this "working well" credit.</div>
+        <div class="context-note">"Sign-up-campaign" alone is 1,401 sessions — 90.3% of it (1,265 sessions) lands specifically on <b>/masisizane-ir-programme/</b>, exactly where it's meant to. This is the single most deliberately-targeted campaign we've seen across all four months of tracking. The 40 "fb paid" sessions with numeric IDs are Meta's own auto-tagging, not manual UTMs — excluded from the tagging-discipline credit.</div>
       </div>
       <div class="panel">
-        <h3>The gap worth investigating</h3>
-        <p class="panel-sub">Even the best-tagged campaign isn't fully covered.</p>
-        <div class="callout warn hideable">
-          <b>Only 54% of the event page's own traffic is tagged.</b> /turn_your_impact_into_growth/ pulled 404 sessions in July (Section 02), but only 218 of those arrived via a UTM-tagged link. The other 186 sessions reached the same page through untagged paths — direct link pastes, shares without the tracked link, or a channel that's dropping the parameter somewhere. Worth asking whoever's distributing this link whether they're always using the tagged version.
+        <h3>Still worth knowing</h3>
+        <p class="panel-sub">Good progress, but two-thirds of traffic is still untagged overall.</p>
+        <div class="callout good hideable">
+          <b>Real improvement:</b> tagged share of total traffic more than doubled month over month (13.7% → 32.3%). If whoever's running the Sign-up-campaign keeps this level of tagging discipline on future pushes, the UTM picture keeps getting more useful every month.
         </div>
-        <div class="context-note">Bigger picture: 86.3% of all July traffic carries no UTM tag at all. That's normal for organic search and direct visits (which shouldn't be tagged), but it also means Direct's large session count (658 in July) likely includes some social/email traffic that should have been tagged and wasn't — untagged links often fall into "Direct" by default in GA4.</div>
+        <div class="callout warn hideable">
+          <b>Still open:</b> 32% of /masisizane-ir-programme/'s own traffic (598 of 1,863 sessions) arrives untagged — direct link pastes or shares without the tracked URL, similar to the gap found on July's event page. And 67.7% of all August traffic overall still carries no tag at all — mostly Direct and Organic Search, which is normal, but worth remembering when reading "Direct" as a channel: some of it is probably untagged email/social traffic hiding in there.
+        </div>
       </div>
     </div>
   </div>
@@ -727,10 +750,10 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   <div class="section" id="sec-tactics">
     <div class="section-head"><span class="section-num">09</span><h2>Immediate tactical recommendations</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
     <div class="icon-grid">
-      <div class="icon-card hideable"><span class="icon">🔗</span><h4>1. Link the funnel top-of-page</h4><p>The single highest-leverage fix: add a visible sign-up/contact CTA directly on /turn-your-impact-into-growth/, the homepage, and /nedbank-fashion-accelerator-programme/ — July's three highest-traffic pages sent 0 visitors to the conversion pages.</p></div>
-      <div class="icon-card hideable"><span class="icon">↔️</span><h4>2. Retarget warm audiences</h4><p>Set up Meta and LinkedIn pixels to target the ~1,339 users from July who visited but didn't convert. Cheaper than fresh acquisition, and they already know the brand.</p></div>
-      <div class="icon-card hideable"><span class="icon">🎯</span><h4>3. Coordinate webinar pathing</h4><p>Route all future promotional spend directly to the specific event landing page, bypassing the generic /events/ hub entirely — coordinate with Mihlali Baliya on which webinar to point to next, given July's page is already rotating out.</p></div>
-      <div class="icon-card hideable"><span class="icon">📈</span><h4>4. Shift focus to action metrics</h4><p>Judge campaign performance on conversions, not raw session volume alone — July is the sharpest case study yet: sessions up 65%, conversions down to zero.</p></div>
+      <div class="icon-card hideable"><span class="icon">📧</span><h4>1. Replicate the Sign-up-campaign playbook</h4><p>It's the best-targeted campaign we've tracked in four months — 90% of its traffic lands exactly where intended. Worth documenting what made it work (subject line, audience list, creative) and reusing the approach for the next push.</p></div>
+      <div class="icon-card hideable"><span class="icon">🏷️</span><h4>2. Close the remaining tagging gap</h4><p>32% of /masisizane-ir-programme/'s own traffic still isn't UTM-tagged. Check with whoever's distributing the link (email forwards, social shares) that they're always using the tracked URL.</p></div>
+      <div class="icon-card hideable"><span class="icon">🎯</span><h4>3. Coordinate webinar pathing</h4><p>Route all future promotional spend directly to the specific event landing page, bypassing the generic /events/ hub entirely — coordinate with Mihlali Baliya on which page to point to next, given August's is already rotating out.</p></div>
+      <div class="icon-card hideable"><span class="icon">📊</span><h4>4. Watch for a September pullback</h4><p>A 71%-concentrated spike like this often normalizes hard the following month once the campaign push ends — worth setting expectations with the client now rather than after the fact.</p></div>
     </div>
   </div>
 
@@ -742,40 +765,41 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="section-num">10</span><h2>Core Web Vitals — pre-migration baseline (Home)</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
-    <p class="section-note">Desktop is healthy and proves the codebase itself isn't broken. Mobile has one real, connected problem worth fixing before migration — everything server-related should wait and be re-tested on Azure.</p>
+    <div class="section-head"><span class="section-num">10</span><h2>Core Web Vitals — re-tested (Home)</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
+    <p class="section-note">Mobile lab score jumped from 48 to 75 — the CLS fix clearly landed. Real-world (field) numbers haven't caught up yet, which is expected on a rolling 28-day window; worth confirming again next month.</p>
     <div class="grid-2">
       <div class="panel">
         <div class="device-row"><span class="device-icon">📱 MOBILE</span></div>
         <div class="gauge-grid">
           <div class="gauge-card">
-            <div class="metric-name"><span>LCP (field)</span></div><div class="metric-val" style="color:var(--rose-soft)">4.9s</div>
-            <div class="bullet-track"><div class="zone" style="width:41.7%;background:var(--teal);"></div><div class="zone" style="width:25%;background:var(--gold);"></div><div class="zone" style="width:33.3%;background:var(--rose);"></div><div class="bullet-marker" style="left:81.7%;"></div></div>
+            <div class="metric-name"><span>LCP (field)</span></div><div class="metric-val" style="color:var(--rose-soft)">5.6s</div>
+            <div class="bullet-track"><div class="zone" style="width:41.7%;background:var(--teal);"></div><div class="zone" style="width:25%;background:var(--gold);"></div><div class="zone" style="width:33.3%;background:var(--rose);"></div><div class="bullet-marker" style="left:93.3%;"></div></div>
             <div class="zone-labels"><span>0</span><span>6s</span></div>
           </div>
           <div class="gauge-card">
-            <div class="metric-name"><span>INP (field)</span></div><div class="metric-val" style="color:var(--teal-soft)">181ms</div>
-            <div class="bullet-track"><div class="zone" style="width:33.3%;background:var(--teal);"></div><div class="zone" style="width:50%;background:var(--gold);"></div><div class="zone" style="width:16.7%;background:var(--rose);"></div><div class="bullet-marker" style="left:30.2%;"></div></div>
+            <div class="metric-name"><span>INP (field)</span></div><div class="metric-val" style="color:var(--teal-soft)">195ms</div>
+            <div class="bullet-track"><div class="zone" style="width:33.3%;background:var(--teal);"></div><div class="zone" style="width:50%;background:var(--gold);"></div><div class="zone" style="width:16.7%;background:var(--rose);"></div><div class="bullet-marker" style="left:32.5%;"></div></div>
             <div class="zone-labels"><span>0</span><span>600ms</span></div>
           </div>
           <div class="gauge-card">
-            <div class="metric-name"><span>CLS (field)</span></div><div class="metric-val" style="color:var(--rose-soft)">0.36</div>
-            <div class="bullet-track"><div class="zone" style="width:20%;background:var(--teal);"></div><div class="zone" style="width:30%;background:var(--gold);"></div><div class="zone" style="width:50%;background:var(--rose);"></div><div class="bullet-marker" style="left:72%;"></div></div>
+            <div class="metric-name"><span>CLS (field)</span></div><div class="metric-val" style="color:var(--rose-soft)">0.37</div>
+            <div class="bullet-track"><div class="zone" style="width:20%;background:var(--teal);"></div><div class="zone" style="width:30%;background:var(--gold);"></div><div class="zone" style="width:50%;background:var(--rose);"></div><div class="bullet-marker" style="left:74%;"></div></div>
             <div class="zone-labels"><span>0</span><span>0.5</span></div>
           </div>
         </div>
+        <div class="context-note">Lab test (synthetic, single run): Performance <b>75</b> (was 48), CLS <b>0.023</b> (was 0.323) — the fix worked in testing. Field (real users, 28-day average): LCP and CLS both still show as poor. Most likely explanation: the fix landed partway through August and hasn't fully rolled through the 28-day field window yet.</div>
       </div>
       <div class="panel">
         <div class="device-row"><span class="device-icon">🖥 DESKTOP</span></div>
         <div class="gauge-grid">
           <div class="gauge-card">
-            <div class="metric-name"><span>LCP (field)</span></div><div class="metric-val" style="color:var(--gold-soft)">3.4s</div>
-            <div class="bullet-track"><div class="zone" style="width:41.7%;background:var(--teal);"></div><div class="zone" style="width:25%;background:var(--gold);"></div><div class="zone" style="width:33.3%;background:var(--rose);"></div><div class="bullet-marker" style="left:56.7%;"></div></div>
+            <div class="metric-name"><span>LCP (field)</span></div><div class="metric-val" style="color:var(--rose-soft)">3.8s</div>
+            <div class="bullet-track"><div class="zone" style="width:41.7%;background:var(--teal);"></div><div class="zone" style="width:25%;background:var(--gold);"></div><div class="zone" style="width:33.3%;background:var(--rose);"></div><div class="bullet-marker" style="left:63.3%;"></div></div>
             <div class="zone-labels"><span>0</span><span>6s</span></div>
           </div>
           <div class="gauge-card">
-            <div class="metric-name"><span>INP (field)</span></div><div class="metric-val" style="color:var(--teal-soft)">54ms</div>
-            <div class="bullet-track"><div class="zone" style="width:33.3%;background:var(--teal);"></div><div class="zone" style="width:50%;background:var(--gold);"></div><div class="zone" style="width:16.7%;background:var(--rose);"></div><div class="bullet-marker" style="left:9%;"></div></div>
+            <div class="metric-name"><span>INP (field)</span></div><div class="metric-val" style="color:var(--teal-soft)">55ms</div>
+            <div class="bullet-track"><div class="zone" style="width:33.3%;background:var(--teal);"></div><div class="zone" style="width:50%;background:var(--gold);"></div><div class="zone" style="width:16.7%;background:var(--rose);"></div><div class="bullet-marker" style="left:9.2%;"></div></div>
             <div class="zone-labels"><span>0</span><span>600ms</span></div>
           </div>
           <div class="gauge-card">
@@ -784,21 +808,23 @@ body.edit-mode .is-hidden .hide-x{display:none;}
             <div class="zone-labels"><span>0</span><span>0.5</span></div>
           </div>
         </div>
+        <div class="context-note">Lab: Performance <b>90</b> (was 93, essentially flat), CLS <b>0.014</b> — still excellent. Desktop was never the problem and remains fine.</div>
       </div>
     </div>
   </div>
 
   <div class="section">
-    <div class="section-head"><span class="section-num">11</span><h2>PageSpeed priorities pre-migration</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
-    <p class="section-note">Sorted by real priority — not by hosting-independence alone. Image dimensions/CLS are template-level fixes worth doing now; true server-config items should wait for Azure.</p>
+    <div class="section-head"><span class="section-num">11</span><h2>PageSpeed priorities — post-fix status</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
+    <p class="section-note">The top item from June/July got fixed. Here's what's left, re-sorted by real priority.</p>
     <div class="panel">
-      <div class="priority-row hideable"><div class="stat-icon warn">!</div><div><div class="ptitle">Mobile CLS 0.36 — image dimensions missing</div><div class="pdesc">Fix now. This is a template-level fix (explicit width/height attributes), not a server setting — it carries over cleanly to Azure and improves LCP at the same time.</div></div></div>
-      <div class="priority-row hideable"><div class="stat-icon ok">✓</div><div><div class="ptitle">Convert media library to WebP</div><div class="pdesc">Quick win, do now — smaller assets also make the eventual migration itself faster to move.</div></div></div>
-      <div class="priority-row hideable"><div class="stat-icon wait">⏱</div><div><div class="ptitle">TTFB &amp; cache lifetimes</div><div class="pdesc">Hold. These are server/CDN-config metrics — the migration changes the answer, so don't spend hours diagnosing the current host.</div></div></div>
-      <div class="priority-row hideable"><div class="stat-icon ok">✓</div><div><div class="ptitle">Establish the official PageSpeed baseline</div><div class="pdesc">Record current Home page scores now as the pre-migration benchmark, then re-test the same pages once Azure is live.</div></div></div>
+      <div class="priority-row hideable"><div class="stat-icon ok">✓</div><div><div class="ptitle">Mobile CLS — largely fixed</div><div class="pdesc">Lab score improved from 0.323 to 0.023. "Image elements missing width/height" is still flagged as a minor item, so a few images may still need attributes, but the bulk of the fix landed.</div></div></div>
+      <div class="priority-row hideable"><div class="stat-icon warn">!</div><div><div class="ptitle">robots.txt still failing — third month running</div><div class="pdesc">Same error as June and July: "Fetch of robots.txt failed: Timed out fetching resource." This is a quick check (visit fetola.co.za/robots.txt directly) that's been sitting unresolved for three review cycles now.</div></div></div>
+      <div class="priority-row hideable"><div class="stat-icon warn">!</div><div><div class="ptitle">Unused CSS/JS — the next real opportunity</div><div class="pdesc">393 KiB of unused JavaScript and 126 KiB of unused CSS on mobile (395 KiB / 91 KiB desktop). This is now the largest remaining estimated-savings item on the page — worth scoping as the next fix.</div></div></div>
+      <div class="priority-row hideable"><div class="stat-icon wait">⏱</div><div><div class="ptitle">TTFB &amp; cache lifetimes</div><div class="pdesc">Still hold — server/CDN-config metrics that the Azure migration will change the answer to regardless of what's done now.</div></div></div>
+      <div class="priority-row hideable"><div class="stat-icon warn">!</div><div><div class="ptitle">New: heading order</div><div class="pdesc">"Heading elements are not in a sequentially-descending order" — new accessibility finding this month, wasn't flagged in June/July. Low effort, worth a quick fix.</div></div></div>
     </div>
     <div class="callout good hideable">
-      <b>What's already working:</b> Desktop scores 93 Performance with CLS at 0.01–0.014 — near perfect. INP (interactivity) is green on <b>both</b> devices, which is usually the hardest metric to get right. This is a mobile-rendering issue, not a fundamentally broken site.
+      <b>The headline win:</b> mobile lab Performance score jumped from 48 to 75 (+27 points) — the single biggest month-over-month change we've seen on any metric in this report. Field data hasn't confirmed it yet (see Section 10), but the underlying fix clearly worked in testing.
     </div>
   </div>
 
@@ -818,48 +844,48 @@ body.edit-mode .is-hidden .hide-x{display:none;}
 
   <div class="section">
     <div class="section-head"><span class="section-num">13</span><h2>Google Ads — paid search</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
-    <p class="section-note">Reach kept growing and clicks got notably cheaper — CPC dropped by a third month over month. Note: this export didn't surface exact Clicks/CTR (showed "See details" placeholders), so those two are estimated from Cost ÷ CPC below.</p>
+    <p class="section-note">Fourth month running of the same trend — reach up, cost per click down, on essentially flat spend. This month's export gave exact Clicks/CTR figures again.</p>
     <div class="kpi-grid">
-      <div class="kpi"><div class="kpi-label">Impressions</div><div class="kpi-val">144.9K</div><div class="kpi-delta pos">▲ +6.0% vs June (136.8K)</div></div>
-      <div class="kpi"><div class="kpi-label">Clicks (est.)</div><div class="kpi-val">~5.7K</div><div class="kpi-delta pos">▲ ~44% vs June (4.0K)</div></div>
-      <div class="kpi"><div class="kpi-label">CTR (est.)</div><div class="kpi-val">~4.0%</div><div class="kpi-delta pos">▲ vs June (2.9%)</div></div>
-      <div class="kpi"><div class="kpi-label">Avg. CPC</div><div class="kpi-val">R0.19</div><div class="kpi-delta pos">▼ −33.8% (cheaper) vs June (R0.28)</div></div>
-      <div class="kpi"><div class="kpi-label">Avg. CPM</div><div class="kpi-val">R7.56</div><div class="kpi-delta pos">▼ −9.0% vs June (R8.24)</div></div>
-      <div class="kpi"><div class="kpi-label">Cost</div><div class="kpi-val">R1.09K</div><div class="kpi-delta flat">≈ flat vs June (R1.13K)</div></div>
+      <div class="kpi"><div class="kpi-label">Impressions</div><div class="kpi-val">163.0K</div><div class="kpi-delta pos">▲ +12.5% vs July (144.9K)</div></div>
+      <div class="kpi"><div class="kpi-label">Clicks</div><div class="kpi-val">6.1K</div><div class="kpi-delta pos">▲ +7.0% vs July (~5.7K)</div></div>
+      <div class="kpi"><div class="kpi-label">CTR</div><div class="kpi-val">3.7%</div><div class="kpi-delta neg">▼ −6.3% vs July (~4.0%)</div></div>
+      <div class="kpi"><div class="kpi-label">Avg. CPC</div><div class="kpi-val">R0.18</div><div class="kpi-delta pos">▼ −5.8% (cheaper) vs July (R0.19)</div></div>
+      <div class="kpi"><div class="kpi-label">Avg. CPM</div><div class="kpi-val">R6.67</div><div class="kpi-delta pos">▼ −11.7% vs July (R7.56)</div></div>
+      <div class="kpi"><div class="kpi-label">Cost</div><div class="kpi-val">R1.09K</div><div class="kpi-delta flat">≈ flat vs July (R1.09K)</div></div>
     </div>
     <div style="height:20px;"></div>
     <div class="grid-2">
       <div class="panel">
-        <h3>Efficiency gains — June vs July</h3>
-        <p class="panel-sub">Same budget, more reach, cheaper clicks — third month of improving efficiency.</p>
+        <h3>Efficiency gains — July vs August</h3>
+        <p class="panel-sub">Same budget, more reach, cheaper clicks — fourth month running.</p>
         <div class="bar-compare">
           <div class="bar-metric">
             <div class="m-label">Impressions (K)</div>
             <div class="bar-pair">
-              <div class="bar-col may"><div class="val">136.8K</div><div class="bar" style="height:132px;"></div></div>
-              <div class="bar-col jun"><div class="val">144.9K</div><div class="bar" style="height:140px;"></div></div>
+              <div class="bar-col may"><div class="val">144.9K</div><div class="bar" style="height:124px;"></div></div>
+              <div class="bar-col jun"><div class="val">163.0K</div><div class="bar" style="height:140px;"></div></div>
             </div>
           </div>
           <div class="bar-metric">
             <div class="m-label">Avg. CPC (R)</div>
             <div class="bar-pair">
-              <div class="bar-col may"><div class="val">R0.28</div><div class="bar" style="height:140px;"></div></div>
-              <div class="bar-col jun"><div class="val">R0.19</div><div class="bar" style="height:95px;"></div></div>
+              <div class="bar-col may"><div class="val">R0.19</div><div class="bar" style="height:140px;"></div></div>
+              <div class="bar-col jun"><div class="val">R0.18</div><div class="bar" style="height:133px;"></div></div>
             </div>
           </div>
         </div>
-        <div class="bar-legend"><span><span class="dot" style="background:var(--muted2)"></span>June</span><span><span class="dot" style="background:var(--gold)"></span>July</span></div>
-        <div class="context-note">CPC has now fallen for two months straight (R0.35 → R0.28 → R0.19) on a flat budget — the account is getting steadily more efficient at turning spend into reach.</div>
+        <div class="bar-legend"><span><span class="dot" style="background:var(--muted2)"></span>July</span><span><span class="dot" style="background:var(--gold)"></span>August</span></div>
+        <div class="context-note">CPC has now fallen for three months straight (R0.35 → R0.28 → R0.19 → R0.18) on essentially flat budget — a very consistent efficiency trend.</div>
       </div>
       <div class="panel">
-        <h3>Top campaigns — July</h3>
+        <h3>Top campaigns — August</h3>
         <table>
           <tr><th>Campaign</th><th class="num">CTR</th><th class="num">Impressions</th><th class="num">Cost</th></tr>
-          <tr><td>Fetola | General…</td><td class="num">7.89%</td><td class="num">7,144</td><td class="num">R608.06</td></tr>
-          <tr><td>CWG Growth Li…</td><td class="num">3.76%</td><td class="num">137,745</td><td class="num">R486.74</td></tr>
+          <tr><td>Leads: 01 | Fetola…</td><td class="num">7.92%</td><td class="num">7,232</td><td class="num">R600.84</td></tr>
+          <tr><td>Awareness: 02 | C…</td><td class="num">3.52%</td><td class="num">155,807</td><td class="num">R486.77</td></tr>
           <tr><td>Other 37 campaigns</td><td class="num">~0%</td><td class="num">~0</td><td class="num">≈R0</td></tr>
         </table>
-        <div class="context-note">Both active campaigns' CTR improved from June (6.79%→7.89% and 2.67%→3.76%) — reach and click quality are both trending the right way.</div>
+        <div class="context-note">Both campaigns were renamed this month ("Leads" / "Awareness" instead of the generic numbered names) — worth asking the client if this reflects a new internal naming convention, since it's a good practice worth keeping consistent going forward.</div>
       </div>
     </div>
   </div>
@@ -868,31 +894,33 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     <div class="section-head"><span class="section-num">14</span><h2>Open items before the review meeting</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
     <p class="section-note">Data gaps that need filling before the client's questions can be fully answered.</p>
     <div class="action-list">
-      <div class="action-item hideable"><div class="dot2"></div><div>Add a visible sign-up/contact CTA to /turn-your-impact-into-growth/, the homepage, and /nedbank-fashion-accelerator-programme/ — July's top 3 pages sent zero traffic to the conversion pages.</div><div class="who">Craig / Dev</div></div>
-      <div class="action-item hideable"><div class="dot2"></div><div>Ask whoever distributes the /turn_your_impact_into_growth/ link whether they're consistently using the tagged version — only 54% of its traffic is currently tagged (see Section 08).</div><div class="who">Craig / Mihlali</div></div>
+      <div class="action-item hideable"><div class="dot2"></div><div>Check GA4 Admin → Events for <code>form_submit_join_community</code>: confirm the Key Event toggle is still on, and find the exact date the count dropped to zero (still open from July/August discussion).</div><div class="who">Craig</div></div>
+      <div class="action-item hideable"><div class="dot2"></div><div>Ask whoever distributes the /masisizane-ir-programme/ link whether they're consistently using the tagged version — 32% of its traffic still arrives untagged (see Section 08).</div><div class="who">Craig / Mihlali</div></div>
       <div class="action-item hideable"><div class="dot2"></div><div>Pull <b>New Users by Channel</b> breakdown to confirm the exact Organic Search figure.</div><div class="who">Craig</div></div>
       <div class="action-item hideable"><div class="dot2"></div><div>Pull the Google Ads <b>Search Terms / keyword report</b> to map paid search users to keywords and destination URLs.</div><div class="who">Craig</div></div>
       <div class="action-item hideable"><div class="dot2"></div><div>Pull <b>Meta/Paid Social spend</b> export — needed to compare cost-effectiveness against Paid Search for events.</div><div class="who">Craig</div></div>
-      <div class="action-item hideable"><div class="dot2"></div><div>Run PageSpeed baseline on remaining key pages (not just Home) before migration.</div><div class="who">Craig</div></div>
-      <div class="action-item hideable"><div class="dot2"></div><div>Coordinate with Mihlali Baliya on the next webinar to promote — July's event page is already fading, same pattern as June.</div><div class="who">Craig / Mihlali</div></div>
+      <div class="action-item hideable"><div class="dot2"></div><div>Re-test PageSpeed on remaining key pages (not just Home) — Home's mobile CLS fix worked in lab testing, worth confirming the same fix was applied site-wide.</div><div class="who">Craig</div></div>
+      <div class="action-item hideable"><div class="dot2"></div><div>Fix robots.txt — still timing out on fetch, third month running.</div><div class="who">Dev</div></div>
+      <div class="action-item hideable"><div class="dot2"></div><div>Coordinate with Mihlali Baliya on the next event page to promote — August's is already fading, same pattern as the last two months.</div><div class="who">Craig / Mihlali</div></div>
     </div>
   </div>
 
   <div class="decisions-card">
     <h2>Review meeting — key decisions</h2>
     <p class="lead">Proposed consensus points for the meeting.</p>
-    <div class="decision-item hideable"><span class="check">⚠</span><span><b>Conversion funnel fix:</b> add CTAs from July's top-traffic pages to the sign-up/contact forms — this is the most urgent new item this month.</span></div>
-    <div class="decision-item hideable"><span class="check">✓</span><span><b>Event mapping strategy:</b> route all paid campaigns straight to individual webinar pages, never the generic /events/ hub — confirmed working two months running.</span></div>
-    <div class="decision-item hideable"><span class="check">✓</span><span><b>PageSpeed:</b> fix image dimensions/CLS now; defer TTFB and cache-config work until Azure is live.</span></div>
-    <div class="decision-item hideable"><span class="check">✓</span><span><b>Retargeting:</b> launch warm-audience pixel retargeting aimed at July's ~1,339 visitors who didn't convert.</span></div>
+    <div class="decision-item hideable"><span class="check">✓</span><span><b>Replicate the Sign-up-campaign approach:</b> the best-targeted campaign we've tracked in four months (90% of its traffic lands on the intended page) — document and reuse for the next push.</span></div>
+    <div class="decision-item hideable"><span class="check">✓</span><span><b>Event mapping strategy:</b> route all paid campaigns straight to individual event pages, never the generic /events/ hub — confirmed working three months running.</span></div>
+    <div class="decision-item hideable"><span class="check">⚠</span><span><b>robots.txt:</b> still broken three months running — needs a fix, not just a re-check.</span></div>
+    <div class="decision-item hideable"><span class="check">✓</span><span><b>PageSpeed:</b> mobile CLS fix confirmed working in lab testing — re-check field data next month to confirm it's landed for real users.</span></div>
     <div class="decision-item hideable"><span class="check">✓</span><span><b>Migration tracking:</b> add the GA4/UTM/GCLID checklist to the formal Azure deployment plan.</span></div>
     <div class="decision-item hideable"><span class="check">⚠</span><span><b>Paid Social vs. Paid Search cost-effectiveness:</b> still on hold until spend data is pulled.</span></div>
+    <div class="decision-item hideable"><span class="check">⚠</span><span><b>Set expectations for September:</b> August's growth is 71% concentrated in one campaign — flag to the client that some pullback next month is normal, not a red flag.</span></div>
   </div>
 
 </div>
 
   <div class="footer">
-    <span>Sources: GA4 (Audience, Acquisition, Pages), Google Search Console, Google Ads — Jul 1–Aug 1, 2026 vs Jun 1–Jul 1, 2026. PageSpeed Insights baseline from June, not yet re-tested.</span>
+    <span>Sources: GA4 (Audience, Acquisition, Pages), Google Search Console, Google Ads, PageSpeed Insights — Aug 1–Sep 1, 2026 vs Jul 1–Aug 1, 2026.</span>
     <span>Prepared by Diginauts</span>
   </div>
 
@@ -956,6 +984,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   let docRef = null;
   let applyingRemoteUpdate = false;
   let pushTimer = null;
+  let lastSyncedAt = null;
 
   function setSyncBadge(state, text){
     const badge = document.getElementById('syncBadge');
@@ -965,6 +994,25 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     if(state) badge.classList.add(state);
     label.textContent = text;
   }
+
+  function markSynced(){
+    lastSyncedAt = new Date();
+    renderLastSynced();
+  }
+
+  function renderLastSynced(){
+    const el = document.getElementById('lastSynced');
+    if(!el) return;
+    if(!lastSyncedAt){ el.textContent = 'Never synced'; return; }
+    const secs = Math.round((Date.now() - lastSyncedAt.getTime())/1000);
+    let text;
+    if(secs < 5) text = 'Synced just now';
+    else if(secs < 60) text = 'Synced ' + secs + 's ago';
+    else if(secs < 3600) text = 'Synced ' + Math.round(secs/60) + 'm ago';
+    else text = 'Synced at ' + lastSyncedAt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    el.textContent = text;
+  }
+  setInterval(renderLastSynced, 5000);
 
   function initFirebaseSync(){
     if(!firebaseIsConfigured){
@@ -990,6 +1038,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
         docRef.onSnapshot(snap=>{
           if(!snap.exists){
             setSyncBadge('synced', 'Synced (first save)');
+            markSynced();
             return;
           }
           const data = snap.data();
@@ -1003,6 +1052,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
           reapplyRemoteState();
           applyingRemoteUpdate = false;
           setSyncBadge('synced', 'Synced');
+          markSynced();
         }, err=>{
           console.error('Firebase sync error:', err);
           setSyncBadge('error', 'Sync error — saving locally only');
@@ -1015,19 +1065,59 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     }
   }
 
+  function writeToCloud(onDone){
+    if(!syncEnabled || !docRef || applyingRemoteUpdate){ if(onDone) onDone(false); return; }
+    docRef.set({
+      hiddenIds, hiddenLabels, edits,
+      updatedAt: new Date().toISOString()
+    }, {merge:true}).then(()=>{
+      markSynced();
+      if(onDone) onDone(true);
+    }).catch(err=>{
+      console.error('Firebase write error:', err);
+      setSyncBadge('error', 'Save failed — check connection');
+      if(onDone) onDone(false);
+    });
+  }
+
+  // Autosave: fires ~500ms after every hide/restore/edit, debounced so rapid
+  // changes (e.g. typing) don't spam Firestore with a write per keystroke.
   function pushToCloud(){
     if(!syncEnabled || !docRef || applyingRemoteUpdate) return;
     clearTimeout(pushTimer);
-    pushTimer = setTimeout(()=>{
-      docRef.set({
-        hiddenIds, hiddenLabels, edits,
-        updatedAt: new Date().toISOString()
-      }, {merge:true}).catch(err=>{
-        console.error('Firebase write error:', err);
-        setSyncBadge('error', 'Save failed — check connection');
-      });
-    }, 500);
+    pushTimer = setTimeout(()=>{ writeToCloud(); }, 500);
   }
+
+  // Belt-and-suspenders autosave: also writes on a fixed interval regardless
+  // of individual change events, so a long edit session (e.g. someone leaves
+  // a text field focused for minutes) is never more than ~20s from a save.
+  setInterval(()=>{ if(syncEnabled) writeToCloud(); }, 20000);
+
+  // Manual "Save" button — writes immediately, no debounce delay, with
+  // visible confirmation on the button itself.
+  window.manualSave = function(){
+    if(isClientMode) return;
+    const btn = document.getElementById('saveBtn');
+    saveJSON(STORAGE_HIDDEN, hiddenIds);
+    saveJSON(STORAGE_LABELS, hiddenLabels);
+    saveJSON(STORAGE_EDITS, edits);
+    if(!firebaseIsConfigured || !syncEnabled){
+      if(btn){
+        const original = btn.textContent;
+        btn.textContent = 'Saved locally';
+        btn.disabled = true;
+        setTimeout(()=>{ btn.textContent = original; btn.disabled = false; }, 1500);
+      }
+      return;
+    }
+    if(btn){ btn.textContent = 'Saving…'; btn.disabled = true; }
+    clearTimeout(pushTimer);
+    writeToCloud((ok)=>{
+      if(!btn) return;
+      btn.textContent = ok ? 'Saved ✓' : 'Save failed';
+      setTimeout(()=>{ btn.textContent = 'Save'; btn.disabled = false; }, 1500);
+    });
+  };
 
   function reapplyRemoteState(){
     // Re-hide/restore every hideable element to match the incoming shared state
@@ -1054,6 +1144,11 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   function saveJSON(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
 
   let hiddenIds = loadJSON(STORAGE_HIDDEN, []);
+  // Client-view mode: add ?client=1 to the URL to share a locked-down,
+  // view-only link. Hides all editing UI AND blocks the underlying
+  // functions (not just the buttons), so it holds up even against
+  // someone poking at the browser console, not just casual clicking.
+  const isClientMode = new URLSearchParams(location.search).get('client') === '1';
   let hiddenLabels = loadJSON(STORAGE_LABELS, {});
   let edits = loadJSON(STORAGE_EDITS, {});
 
@@ -1126,6 +1221,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   }
 
   function hideItem(hid, label){
+    if(isClientMode) return;
     const el = document.querySelector('[data-hid="'+hid+'"]') || document.getElementById(hid);
     if(el) el.classList.add('is-hidden');
     if(!hiddenIds.includes(hid)){ hiddenIds.push(hid); hiddenLabels[hid] = label || hid; }
@@ -1135,6 +1231,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   }
 
   function restoreItem(hid){
+    if(isClientMode) return;
     const el = document.querySelector('[data-hid="'+hid+'"]') || document.getElementById(hid);
     if(el) el.classList.remove('is-hidden');
     hiddenIds = hiddenIds.filter(h=>h!==hid);
@@ -1182,6 +1279,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   }
 
   window.toggleEditMode = function(){
+    if(isClientMode) return;
     applyEditMode(!document.body.classList.contains('edit-mode'));
   };
 
@@ -1208,6 +1306,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   };
 
   window.resetDashboard = function(){
+    if(isClientMode) return;
     const msg = syncEnabled
       ? 'Reset all hidden items and edited text back to the original report? This clears the shared version for everyone, not just your browser.'
       : 'Reset all hidden items and edited text back to the original report?';
@@ -1226,10 +1325,11 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   };
 
   function init(){
+    if(isClientMode) document.body.classList.add('client-mode');
     setupHideables();
     setupEditables();
     applyHidden();
-    applyEditMode(loadJSON(STORAGE_MODE, false));
+    applyEditMode(isClientMode ? false : loadJSON(STORAGE_MODE, false));
     setView(loadJSON(STORAGE_VIEW, 'monthly'));
     initFirebaseSync();
   }
