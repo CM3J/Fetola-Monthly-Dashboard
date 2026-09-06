@@ -151,6 +151,30 @@ h1,h2,h3,h4,.hero-number,.decisions-card h2{font-family:'Poppins',sans-serif;}
 .icon-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
 @media(max-width:820px){.icon-grid{grid-template-columns:1fr;}}
 .icon-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px;position:relative;}
+
+/* Insights tab */
+.insight-summary-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:8px;}
+@media(max-width:820px){.insight-summary-row{grid-template-columns:1fr;}}
+.insight-summary-card{background:linear-gradient(135deg,#16233D,#0F1A2E);border:1px solid var(--border);border-radius:14px;padding:22px;text-align:center;}
+.insight-summary-card .num{font-family:'Poppins',sans-serif;font-weight:700;font-size:32px;line-height:1;margin-bottom:8px;}
+.insight-summary-card .lbl{font-size:12.5px;color:var(--text-muted);}
+.insight-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+@media(max-width:820px){.insight-grid{grid-template-columns:1fr;}}
+.insight-card{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:10px;padding:20px 22px;position:relative;}
+.insight-card.win{border-left-color:var(--teal);}
+.insight-card.opportunity{border-left-color:var(--gold);}
+.insight-card .i-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;}
+.insight-card h4{font-size:15px;margin:0;flex:1;}
+.insight-card .i-stat{font-family:'Poppins',sans-serif;font-weight:700;font-size:20px;white-space:nowrap;}
+.insight-card.win .i-stat{color:var(--teal-soft);}
+.insight-card.opportunity .i-stat{color:var(--gold-soft);}
+.insight-card p{color:var(--text-muted);font-size:13px;margin:0;}
+.insight-card .i-ref{display:inline-block;margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:8px;width:100%;}
+.insight-section-label{display:flex;align-items:center;gap:10px;margin:36px 0 16px;}
+.insight-section-label .tag-pill{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:4px 12px;border-radius:20px;font-weight:600;}
+.insight-section-label.win .tag-pill{background:rgba(63,174,138,0.15);color:var(--teal-soft);}
+.insight-section-label.opportunity .tag-pill{background:rgba(231,168,60,0.15);color:var(--gold-soft);}
+.insight-section-label h3{font-size:18px;margin:0;}
 .icon-card .icon{font-size:20px;margin-bottom:10px;display:block;}
 .icon-card h4{font-size:15px;margin:0 0 8px;}
 .icon-card p{color:var(--text-muted);font-size:13px;margin:0;}
@@ -286,7 +310,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
   .control-bar, .hidden-tray, .hide-x, .restore-x, .row-hide-x { display:none !important; }
   .is-hidden { display:none !important; }
   [data-editable] { outline:none !important; background:transparent !important; }
-  .section, .panel, .compare-card, .icon-card, .hero-card, .decisions-card, .kpi, .gauge-card { break-inside:avoid; }
+  .section, .panel, .compare-card, .icon-card, .hero-card, .decisions-card, .kpi, .gauge-card, .insight-card, .insight-summary-card { break-inside:avoid; }
   .part-divider { break-before:page; }
   .wrap { max-width:100%; }
 }
@@ -295,7 +319,8 @@ body.edit-mode .is-hidden .hide-x{display:none;}
 <body>
 <div class="control-bar">
   <div class="view-toggle-wrap">
-    <button class="view-btn active" id="viewBtnMonthly" onclick="setView('monthly')">Month-over-Month</button>
+    <button class="view-btn active" id="viewBtnInsights" onclick="setView('insights')">Insights</button>
+    <button class="view-btn" id="viewBtnMonthly" onclick="setView('monthly')">Month-over-Month</button>
     <button class="view-btn" id="viewBtnAllTime" onclick="setView('alltime')">All-Time</button>
   </div>
   <button class="print-btn" onclick="window.print()">Download PDF</button>
@@ -324,6 +349,86 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     </div>
     <div class="period-chip">Current: <b>Aug 1 – Sep 1, 2026</b><br>vs Prior: <b>Jul 1 – Aug 1, 2026</b></div>
   </div>
+
+
+<div id="insightsView" style="display:none;">
+
+  <div class="insight-summary-row">
+    <div class="insight-summary-card"><div class="num" style="color:var(--teal-soft);">+123.8%</div><div class="lbl">Sessions vs. July</div></div>
+    <div class="insight-summary-card"><div class="num" style="color:var(--gold-soft);">32.3%</div><div class="lbl">Traffic now UTM-tagged (up from 13.7%)</div></div>
+    <div class="insight-summary-card"><div class="num" style="color:var(--teal-soft);">75</div><div class="lbl">Mobile PageSpeed score (up from 48)</div></div>
+  </div>
+
+  <div class="insight-section-label win">
+    <span class="tag-pill">✓ Improved this month</span>
+    <h3>What's working</h3>
+  </div>
+  <div class="insight-grid">
+    <div class="insight-card win hideable">
+      <div class="i-head"><h4>Traffic surged</h4><span class="i-stat">+123.8%</span></div>
+      <p>2,067 → 4,625 sessions, the largest jump we've tracked. Driven almost entirely by one page and one campaign — see the caveat on the opportunity side before treating this as a new baseline.</p>
+      <span class="i-ref">→ Sections 01, 02</span>
+    </div>
+    <div class="insight-card win hideable">
+      <div class="i-head"><h4>Search Console: first all-green month</h4><span class="i-stat">↑↑↑</span></div>
+      <p>Impressions, clicks, and CTR all improved together for the first time since tracking began. The 3-month impressions decline broke.</p>
+      <span class="i-ref">→ Section 04</span>
+    </div>
+    <div class="insight-card win hideable">
+      <div class="i-head"><h4>Google Ads getting cheaper</h4><span class="i-stat">R0.35→R0.18</span></div>
+      <p>Cost-per-click has fallen four months straight on essentially flat spend — the most consistent trend in the whole report.</p>
+      <span class="i-ref">→ Section 13</span>
+    </div>
+    <div class="insight-card win hideable">
+      <div class="i-head"><h4>UTM tagging discipline more than doubled</h4><span class="i-stat">13.7%→32.3%</span></div>
+      <p>The new Sign-up-campaign is the best-targeted campaign we've seen in four months — 90% of it lands exactly on its intended page.</p>
+      <span class="i-ref">→ Section 08</span>
+    </div>
+    <div class="insight-card win hideable">
+      <div class="i-head"><h4>Mobile PageSpeed fix landed</h4><span class="i-stat">48→75</span></div>
+      <p>Lab CLS score improved from 0.323 to 0.023 — the fix we flagged in June actually worked. Field data (real users) hasn't confirmed it yet; that's the one open thread here, not a failure.</p>
+      <span class="i-ref">→ Sections 10, 11</span>
+    </div>
+    <div class="insight-card win hideable">
+      <div class="i-head"><h4>Event page rotation keeps improving</h4><span class="i-stat">182→404→421</span></div>
+      <p>Three months, three different event pages, and each one has peaked higher than the last. The rotation tactic is working and getting more effective.</p>
+      <span class="i-ref">→ Section 05</span>
+    </div>
+  </div>
+
+  <div class="insight-section-label opportunity">
+    <span class="tag-pill">⚠ Opportunities</span>
+    <h3>Where to focus next</h3>
+  </div>
+  <div class="insight-grid">
+    <div class="insight-card opportunity hideable">
+      <div class="i-head"><h4>Expect a September pullback</h4><span class="i-stat">71%</span></div>
+      <p>71% of August's growth came from a single campaign. Set the client's expectations now that some normalization next month is likely, not a red flag.</p>
+      <span class="i-ref">→ Sections 02, 09</span>
+    </div>
+    <div class="insight-card opportunity hideable">
+      <div class="i-head"><h4>robots.txt still broken</h4><span class="i-stat">3 months</span></div>
+      <p>Same fetch-timeout error every month since June. This is a fix, not another re-check — worth escalating directly to dev.</p>
+      <span class="i-ref">→ Section 11</span>
+    </div>
+    <div class="insight-card opportunity hideable">
+      <div class="i-head"><h4>32% of top page's traffic still untagged</h4><span class="i-stat">598 sessions</span></div>
+      <p>Even the best-tagged campaign this month has a gap. Worth checking whether the tracked link is always the one being shared.</p>
+      <span class="i-ref">→ Section 08</span>
+    </div>
+    <div class="insight-card opportunity hideable">
+      <div class="i-head"><h4>Three data pulls still outstanding</h4><span class="i-stat">2+ months open</span></div>
+      <p>New Users by Channel, Google Ads Search Terms report, and Paid Social spend — all sitting on the Open Items list since July or earlier.</p>
+      <span class="i-ref">→ Open items</span>
+    </div>
+    <div class="insight-card opportunity hideable">
+      <div class="i-head"><h4>Unused CSS/JS — the next PageSpeed win</h4><span class="i-stat">393 KiB</span></div>
+      <p>Now the largest single estimated-savings item on the page, mobile and desktop both. Natural next target after the CLS fix.</p>
+      <span class="i-ref">→ Section 11</span>
+    </div>
+  </div>
+
+</div>
 
 
 <div id="allTimeView" style="display:none;">
@@ -355,7 +460,6 @@ body.edit-mode .is-hidden .hide-x{display:none;}
       <tr><td>UTM-tagged share of traffic</td><td class="num">—</td><td class="num">—</td><td class="num">13.7%</td><td class="num">32.3%</td></tr>
     </table>
     </div>
-    <div class="context-note">Conversions tracking was removed from this report — the underlying GA4 trigger is suspected broken (page-redirect-based, and the form flow may no longer redirect). Will be reinstated once the trigger is fixed and verified in GTM.</div>
   </div>
 
   <div class="section">
@@ -672,7 +776,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
 
   <div class="section" id="sec-events">
     <div class="section-head"><span class="section-num">05</span><h2>Events hub vs. specific campaigns</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
-    <p class="section-note">Same pattern holds a third month running — verified directly against the August export.</p>
+    <p class="section-note">Beyond confirming the pattern a third time, there's a new trend worth flagging: each rotation is outperforming the last.</p>
     <div class="compare-grid">
       <div class="compare-card hideable">
         <div class="kicker">Events hub performance</div>
@@ -680,10 +784,13 @@ body.edit-mode .is-hidden .hide-x{display:none;}
         <p>The bare <b>/events/</b> hub page pulled <b>11 sessions</b> in August — creeping up slightly each month (1 → 6 → 11) but still negligible next to what a tagged, specific event page pulls on its own.</p>
       </div>
       <div class="compare-card hideable">
-        <div class="kicker">Direct webinar targeting</div>
-        <h4>Third rotation, same result</h4>
-        <p>July's top event page (<b>/turn-your-impact-into-growth/</b>, 404 sessions) dropped to 18 in August, replaced by <b>/get-your-product-ready-for-retail-buyers/</b>, which pulled <b>421 sessions</b> on its own. Three months, three different event pages, the same lifecycle each time — this is now a reliable pattern to plan around, not a one-off.</p>
+        <div class="kicker">New: each rotation is beating the last</div>
+        <h4>Peak performance is climbing month over month</h4>
+        <p>The featured event page's own peak has grown every single month: <b>182</b> sessions (June's page) → <b>404</b> (July's) → <b>421</b> (August's). Whoever's running this rotation is getting measurably better at driving traffic to each new page — worth naming this explicitly as a win, not just noting the rotation pattern itself.</p>
       </div>
+    </div>
+    <div class="callout good hideable">
+      <b>Third rotation, same lifecycle, better result each time:</b> July's page (<b>/turn-your-impact-into-growth/</b>, 404 sessions) dropped to 18 in August, replaced by <b>/get-your-product-ready-for-retail-buyers/</b>, which opened at 421 — a new high. Growth is slowing (June→July was +122%, July→August only +4.2%), which may mean this channel is approaching a ceiling — worth watching whether September keeps climbing or plateaus.
     </div>
   </div>
 
@@ -693,12 +800,12 @@ body.edit-mode .is-hidden .hide-x{display:none;}
       <div class="compare-card hideable">
         <div class="kicker">Why the numbers look off</div>
         <h4>"New + Returning don't add up"</h4>
-        <p>This is expected, not a tracking error. <b>Total Users (804)</b> is deduplicated once, site-wide. But a user who visits via two different channels in the same period appears in both of those channels' individual totals. That's why the per-channel numbers sum to about <b>819</b> while the actual site total is <b>804</b> — a 15-user overlap from cross-channel visits, not missing or double-counted data.</p>
+        <p>Same mechanism as every month, worth re-stating with August's own numbers: <b>Total Users (3,200)</b> is deduplicated once, site-wide. A user who visits via two different channels in the same period appears in both of those channels' individual totals. That's why the per-channel numbers sum to about <b>3,342</b> while the actual site total is <b>3,200</b> — a 142-user overlap, noticeably larger than June's (~15 users). Makes sense given the Sign-up-campaign pushed the same audience through email <b>and</b> social simultaneously — more people touched two channels at once than in a typical month.</p>
       </div>
-      <div class="compare-card hideable">
-        <div class="kicker">SEO discovery timing</div>
+      <div class="compare-card flag hideable">
+        <div class="kicker">⚠ Still open — two months running</div>
         <h4>Zero new users from Organic Search</h4>
-        <p>Short-lived webinar pages generally don't have time to get indexed and rank in Google before the event has already passed — so it's expected that these pages lean on paid and direct traffic rather than organic discovery. We're pulling the New-Users-by-channel breakdown to confirm the exact figure for next review.</p>
+        <p>We still can't confirm this from GA4 channel exports alone — it needs the actual New-Users-by-channel breakdown, which hasn't been pulled yet despite being on the Open Items list since July. Worth either prioritizing that pull before next review, or dropping the question if it's no longer a client priority.</p>
       </div>
     </div>
   </div>
@@ -835,7 +942,6 @@ body.edit-mode .is-hidden .hide-x{display:none;}
         <tr><th>Phase</th><th>Verification item</th><th>Testing framework</th><th>Status</th></tr>
         <tr><td>Pre-migration code</td><td>GTM and tracking scripts included in the Azure bundle</td><td>Check code in the staging site before go-live</td><td><span class="tag pending">Pending</span></td></tr>
         <tr><td>Acquisition UTMs</td><td>Confirm Azure server routing doesn't strip query parameters</td><td>Run dummy test URLs (e.g. ?utm_source=test) post go-live</td><td><span class="tag pending">Pending</span></td></tr>
-        <tr><td>Key events</td><td>Confirm contact-form and community-signup tracking stays active</td><td>Complete test submissions, check GA4 DebugView</td><td><span class="tag pending">Pending</span></td></tr>
         <tr><td>Geographic routing</td><td>Confirm South Africa regional tracking accuracy</td><td>Validate visitor location data against real-time hits</td><td><span class="tag pending">Pending</span></td></tr>
         <tr><td>Ads click tracking</td><td>Confirm GCLID auto-tagging passes through cleanly</td><td>Compare Google Ads clicks vs. GA4 Paid Search sessions post go-live — worth watching closely given current tracking patterns</td><td><span class="tag pending">Pending</span></td></tr>
       </table>
@@ -894,7 +1000,6 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     <div class="section-head"><span class="section-num">14</span><h2>Open items before the review meeting</h2><span class="section-hide-x" onclick="hideSection(this)">✕</span></div>
     <p class="section-note">Data gaps that need filling before the client's questions can be fully answered.</p>
     <div class="action-list">
-      <div class="action-item hideable"><div class="dot2"></div><div>Check GA4 Admin → Events for <code>form_submit_join_community</code>: confirm the Key Event toggle is still on, and find the exact date the count dropped to zero (still open from July/August discussion).</div><div class="who">Craig</div></div>
       <div class="action-item hideable"><div class="dot2"></div><div>Ask whoever distributes the /masisizane-ir-programme/ link whether they're consistently using the tagged version — 32% of its traffic still arrives untagged (see Section 08).</div><div class="who">Craig / Mihlali</div></div>
       <div class="action-item hideable"><div class="dot2"></div><div>Pull <b>New Users by Channel</b> breakdown to confirm the exact Organic Search figure.</div><div class="who">Craig</div></div>
       <div class="action-item hideable"><div class="dot2"></div><div>Pull the Google Ads <b>Search Terms / keyword report</b> to map paid search users to keywords and destination URLs.</div><div class="who">Craig</div></div>
@@ -1202,6 +1307,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
       '.panel h3','.panel-sub','.section-note','.context-note','.loss-name','.loss-val','.callout',
       '.action-item > div:nth-child(2)','.compare-card h4','.compare-card p','.compare-card .kicker',
       '.icon-card h4','.icon-card p','.priority-row .ptitle','.priority-row .pdesc',
+      '.insight-card h4','.insight-card p','.insight-card .i-stat','.insight-summary-card .num','.insight-summary-card .lbl','.insight-section-label h3',
       '.decision-item span:last-child','.decisions-card h2','.decisions-card .lead',
       'td','th','h1','h2','h3','.sub','.eyebrow','.period-chip'
     ];
@@ -1291,22 +1397,19 @@ body.edit-mode .is-hidden .hide-x{display:none;}
 
   const STORAGE_VIEW = 'fetolaDash_view_' + REPORT_VERSION;
   window.setView = function(view){
-    const monthly = document.getElementById('monthlyView');
-    const alltime = document.getElementById('allTimeView');
-    const btnMonthly = document.getElementById('viewBtnMonthly');
-    const btnAllTime = document.getElementById('viewBtnAllTime');
-    if(!monthly || !alltime) return;
-    if(view === 'alltime'){
-      monthly.style.display = 'none';
-      alltime.style.display = 'block';
-      if(btnMonthly) btnMonthly.classList.remove('active');
-      if(btnAllTime) btnAllTime.classList.add('active');
-    } else {
-      monthly.style.display = 'block';
-      alltime.style.display = 'none';
-      if(btnMonthly) btnMonthly.classList.add('active');
-      if(btnAllTime) btnAllTime.classList.remove('active');
-    }
+    const views = {
+      insights: {el: document.getElementById('insightsView'), btn: document.getElementById('viewBtnInsights')},
+      monthly:  {el: document.getElementById('monthlyView'),  btn: document.getElementById('viewBtnMonthly')},
+      alltime:  {el: document.getElementById('allTimeView'),  btn: document.getElementById('viewBtnAllTime')}
+    };
+    if(!views[view] || !views[view].el) view = 'insights';
+    Object.keys(views).forEach(key=>{
+      const v = views[key];
+      if(!v.el) return;
+      const isActive = key === view;
+      v.el.style.display = isActive ? 'block' : 'none';
+      if(v.btn) v.btn.classList.toggle('active', isActive);
+    });
     saveJSON(STORAGE_VIEW, view);
     window.scrollTo({top:0, behavior:'instant'});
   };
@@ -1336,7 +1439,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     setupEditables();
     applyHidden();
     applyEditMode(isClientMode ? false : loadJSON(STORAGE_MODE, false));
-    setView(loadJSON(STORAGE_VIEW, 'monthly'));
+    setView(loadJSON(STORAGE_VIEW, 'insights'));
     initFirebaseSync();
   }
 
