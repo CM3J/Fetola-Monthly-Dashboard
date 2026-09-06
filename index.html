@@ -935,10 +935,16 @@ body.edit-mode .is-hidden .hide-x{display:none;}
    copy of the file in your own browser; nothing is sent anywhere.
    ========================================================= */
 (function(){
-  const STORAGE_HIDDEN = 'fetolaDash_hidden_v3';
-  const STORAGE_LABELS  = 'fetolaDash_labels_v3';
-  const STORAGE_EDITS   = 'fetolaDash_edits_v3';
-  const STORAGE_MODE    = 'fetolaDash_editMode_v3';
+  // Bump this every time the report's structure changes (sections added,
+  // removed, or reordered) — which happens most months. It scopes both
+  // local storage and the shared Firestore doc to this specific version
+  // of the file, so old saved edits/hidden-items from a differently
+  // structured month can never get replayed onto the wrong element here.
+  const REPORT_VERSION = 'aug2026-v1';
+  const STORAGE_HIDDEN = 'fetolaDash_hidden_' + REPORT_VERSION;
+  const STORAGE_LABELS  = 'fetolaDash_labels_' + REPORT_VERSION;
+  const STORAGE_EDITS   = 'fetolaDash_edits_' + REPORT_VERSION;
+  const STORAGE_MODE    = 'fetolaDash_editMode_' + REPORT_VERSION;
 
   /* =========================================================
      FIREBASE SYNC (optional — shared editing across devices/people)
@@ -976,7 +982,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     messagingSenderId: "203202281317",
     appId: "1:203202281317:web:79a5e803c42d9ec6e26b8c"
   };
-  const FIREBASE_DOC_PATH = ['dashboards', 'fetola-dashboard'];
+  const FIREBASE_DOC_PATH = ['dashboards', 'fetola-dashboard-' + REPORT_VERSION];
   const firebaseIsConfigured = firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('YOUR_');
 
   let syncEnabled = false;
@@ -1283,7 +1289,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     applyEditMode(!document.body.classList.contains('edit-mode'));
   };
 
-  const STORAGE_VIEW = 'fetolaDash_view_v1';
+  const STORAGE_VIEW = 'fetolaDash_view_' + REPORT_VERSION;
   window.setView = function(view){
     const monthly = document.getElementById('monthlyView');
     const alltime = document.getElementById('allTimeView');
