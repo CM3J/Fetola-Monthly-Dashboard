@@ -443,23 +443,24 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     <div class="section-head"><span class="section-num">A1</span><h2>Headline metrics, all four months</h2></div>
     <p class="section-note">May's spike, June's contraction, July's rebound, and August's concentrated surge — four very different months.</p>
     <div class="alltime-table-wrap">
-    <table>
-      <tr><th>Metric</th><th class="num">May 2026</th><th class="num">June 2026</th><th class="num">July 2026</th><th class="num">August 2026</th></tr>
-      <tr><td>Total Users</td><td class="num">3,293</td><td class="num">804</td><td class="num">1,339</td><td class="num">3,200</td></tr>
-      <tr><td>New Users</td><td class="num">2,874</td><td class="num">631</td><td class="num">1,104</td><td class="num">2,635</td></tr>
-      <tr><td>Sessions</td><td class="num">4,791</td><td class="num">1,256</td><td class="num">2,067</td><td class="num">4,625</td></tr>
-      <tr><td>Views</td><td class="num">7,523</td><td class="num">2,432</td><td class="num">3,996</td><td class="num">8,175</td></tr>
-      <tr><td>Avg. Session Duration</td><td class="num">02:29</td><td class="num">03:27</td><td class="num">03:43</td><td class="num">02:59</td></tr>
-      <tr><td>Engagement Rate</td><td class="num">59.4%</td><td class="num">58.4%</td><td class="num">60.8%</td><td class="num">60.9%</td></tr>
-      <tr><td>Search Console Impressions</td><td class="num">43.2K</td><td class="num">37.8K</td><td class="num">31.6K</td><td class="num">32.9K</td></tr>
-      <tr><td>Search Console Clicks</td><td class="num">847</td><td class="num">498</td><td class="num">534</td><td class="num">603</td></tr>
-      <tr><td>Search Console CTR</td><td class="num">2.0%</td><td class="num">1.3%</td><td class="num">1.7%</td><td class="num">1.8%</td></tr>
-      <tr><td>Google Ads Impressions</td><td class="num">116.4K</td><td class="num">136.8K</td><td class="num">144.9K</td><td class="num">163.0K</td></tr>
-      <tr><td>Google Ads Cost</td><td class="num">R1.15K</td><td class="num">R1.13K</td><td class="num">R1.09K</td><td class="num">R1.09K</td></tr>
-      <tr><td>Google Ads Avg. CPC</td><td class="num">R0.35</td><td class="num">R0.28</td><td class="num">R0.19</td><td class="num">R0.18</td></tr>
-      <tr><td>UTM-tagged share of traffic</td><td class="num">—</td><td class="num">—</td><td class="num">13.7%</td><td class="num">32.3%</td></tr>
+    <table id="headlineMetricsTable">
+      <tr><th>Metric</th><th class="num">May 2026</th><th class="num">June 2026</th><th class="num">July 2026</th><th class="num">August 2026</th><th class="num">YTD</th></tr>
+      <tr data-agg="sum"><td>Total Users</td><td class="num">3,293</td><td class="num">804</td><td class="num">1,339</td><td class="num">3,200</td></tr>
+      <tr data-agg="sum"><td>New Users</td><td class="num">2,874</td><td class="num">631</td><td class="num">1,104</td><td class="num">2,635</td></tr>
+      <tr data-agg="sum"><td>Sessions</td><td class="num">4,791</td><td class="num">1,256</td><td class="num">2,067</td><td class="num">4,625</td></tr>
+      <tr data-agg="sum"><td>Views</td><td class="num">7,523</td><td class="num">2,432</td><td class="num">3,996</td><td class="num">8,175</td></tr>
+      <tr data-agg="avg"><td>Avg. Session Duration</td><td class="num">02:29</td><td class="num">03:27</td><td class="num">03:43</td><td class="num">02:59</td></tr>
+      <tr data-agg="avg"><td>Engagement Rate</td><td class="num">59.4%</td><td class="num">58.4%</td><td class="num">60.8%</td><td class="num">60.9%</td></tr>
+      <tr data-agg="sum"><td>Search Console Impressions</td><td class="num">43.2K</td><td class="num">37.8K</td><td class="num">31.6K</td><td class="num">32.9K</td></tr>
+      <tr data-agg="sum"><td>Search Console Clicks</td><td class="num">847</td><td class="num">498</td><td class="num">534</td><td class="num">603</td></tr>
+      <tr data-agg="avg"><td>Search Console CTR</td><td class="num">2.0%</td><td class="num">1.3%</td><td class="num">1.7%</td><td class="num">1.8%</td></tr>
+      <tr data-agg="sum"><td>Google Ads Impressions</td><td class="num">116.4K</td><td class="num">136.8K</td><td class="num">144.9K</td><td class="num">163.0K</td></tr>
+      <tr data-agg="sum"><td>Google Ads Cost</td><td class="num">R1.15K</td><td class="num">R1.13K</td><td class="num">R1.09K</td><td class="num">R1.09K</td></tr>
+      <tr data-agg="avg"><td>Google Ads Avg. CPC</td><td class="num">R0.35</td><td class="num">R0.28</td><td class="num">R0.19</td><td class="num">R0.18</td></tr>
+      <tr data-agg="avg"><td>UTM-tagged share of traffic</td><td class="num">—</td><td class="num">—</td><td class="num">13.7%</td><td class="num">32.3%</td></tr>
     </table>
     </div>
+    <div class="context-note">YTD column is computed automatically from whichever month columns are present — sums for volume metrics (Sessions, Users, Views, Impressions, Cost), averages for rate metrics (Engagement Rate, CTR, Avg. CPC, Avg. Session Duration). Missing months (marked "—") are excluded from averages rather than counted as zero. Adding a new month's column next to August will automatically extend this calculation — no manual updating needed.</div>
   </div>
 
   <div class="section">
@@ -703,14 +704,14 @@ body.edit-mode .is-hidden .hide-x{display:none;}
       <div class="panel">
         <h3>Channel performance detail</h3>
         <table>
-          <tr><th>Channel</th><th class="num">Sessions</th><th class="num">Eng. rate</th></tr>
-          <tr><td>Direct</td><td class="num">1,512</td><td class="num">60.2%</td></tr>
-          <tr><td>Email</td><td class="num">1,014</td><td class="num">55.3%</td></tr>
-          <tr><td>Organic Social</td><td class="num">769</td><td class="num">68.1%</td></tr>
-          <tr><td>Organic Search</td><td class="num">545</td><td class="num">63.7%</td></tr>
-          <tr><td>Paid Search</td><td class="num">494</td><td class="num">67.0%</td></tr>
-          <tr><td>Unassigned</td><td class="num">152</td><td class="num">20.4%</td></tr>
-          <tr><td>Referral</td><td class="num">118</td><td class="num">62.7%</td></tr>
+          <tr><th>Channel</th><th class="num">Sessions</th><th class="num">Views</th><th class="num">Eng. rate</th></tr>
+          <tr><td>Direct</td><td class="num">1,512</td><td class="num">2,670</td><td class="num">60.2%</td></tr>
+          <tr><td>Email</td><td class="num">1,014</td><td class="num">1,314</td><td class="num">55.3%</td></tr>
+          <tr><td>Organic Social</td><td class="num">769</td><td class="num">1,072</td><td class="num">68.1%</td></tr>
+          <tr><td>Organic Search</td><td class="num">545</td><td class="num">1,321</td><td class="num">63.7%</td></tr>
+          <tr><td>Paid Search</td><td class="num">494</td><td class="num">1,168</td><td class="num">67.0%</td></tr>
+          <tr><td>Unassigned</td><td class="num">152</td><td class="num">152</td><td class="num">20.4%</td></tr>
+          <tr><td>Referral</td><td class="num">118</td><td class="num">401</td><td class="num">62.7%</td></tr>
         </table>
         <div class="context-note">Table shows the 7 largest of 10 channels — GA4's table cut off the remaining 2 (likely AI Assistant and Display, both small). Their combined share is under 2%.</div>
       </div>
@@ -1433,6 +1434,85 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     }
   };
 
+  /* =========================================================
+     YTD COLUMN — All-Time headline metrics table
+     Reads whatever month columns currently exist in the table and
+     computes a trailing "YTD" column automatically: sums for volume
+     metrics, averages for rate metrics (via each row's data-agg
+     attribute). Add a new month's <td> to a row next season and this
+     recalculates on its own — no manual math needed.
+     ========================================================= */
+  function parseMetricCell(text){
+    text = (text || '').trim();
+    if(text === '' || text === '—' || text === '-') return null;
+    const isPercent = text.endsWith('%');
+    const hasR = text.startsWith('R');
+    let core = text.replace(/^R/,'').replace(/%$/,'').replace(/,/g,'');
+    if(/^\d{1,2}:\d{2}$/.test(core)){
+      const parts = core.split(':').map(Number);
+      return {value: parts[0]*60+parts[1], kind:'time'};
+    }
+    const hasK = /K$/i.test(core);
+    if(hasK) core = core.replace(/K$/i,'');
+    const num = parseFloat(core);
+    if(isNaN(num)) return null;
+    return {value: hasK ? num*1000 : num, kind: isPercent ? 'percent' : (hasR ? 'currency' : 'number'), wasK: hasK};
+  }
+
+  function formatMetricValue(value, sample){
+    if(sample.kind === 'time'){
+      const mm = Math.floor(value/60), ss = Math.round(value%60);
+      return String(mm).padStart(2,'0') + ':' + String(ss).padStart(2,'0');
+    }
+    if(sample.kind === 'percent') return value.toFixed(1) + '%';
+    if(sample.kind === 'currency'){
+      return value >= 1000 ? 'R' + (value/1000).toFixed(2) + 'K' : 'R' + value.toFixed(2);
+    }
+    if(sample.wasK) return (value/1000).toFixed(1) + 'K';
+    return Math.round(value).toLocaleString();
+  }
+
+  function renderYTDColumn(){
+    const table = document.getElementById('headlineMetricsTable');
+    if(!table) return;
+    const rows = table.querySelectorAll('tr');
+    rows.forEach((row, i)=>{
+      if(i === 0){
+        // Header row: add a YTD header cell if not already present
+        if(!row.querySelector('th.ytd-col')){
+          const th = document.createElement('th');
+          th.className = 'num ytd-col';
+          th.textContent = 'YTD';
+          row.appendChild(th);
+        }
+        return;
+      }
+      const agg = row.dataset.agg;
+      if(!agg) return;
+      const cells = Array.from(row.querySelectorAll('td.num:not(.ytd-col)'));
+      const parsed = cells.map(c => parseMetricCell(c.textContent)).filter(Boolean);
+      let existingYtd = row.querySelector('td.ytd-col');
+      if(!existingYtd){
+        existingYtd = document.createElement('td');
+        existingYtd.className = 'num ytd-col';
+        existingYtd.style.fontWeight = '600';
+        existingYtd.style.color = 'var(--gold-soft)';
+        row.appendChild(existingYtd);
+      }
+      if(parsed.length === 0){ existingYtd.textContent = '—'; }
+      else {
+        const sum = parsed.reduce((a,b)=>a+b.value, 0);
+        const result = agg === 'avg' ? sum/parsed.length : sum;
+        existingYtd.textContent = formatMetricValue(result, parsed[0]);
+      }
+      // Always computed, never hand-edited — strip editability even if
+      // setupEditables() already touched this cell on an earlier run.
+      existingYtd.removeAttribute('contenteditable');
+      existingYtd.removeAttribute('data-editable');
+      existingYtd.style.cursor = 'default';
+    });
+  }
+
   function init(){
     if(isClientMode) document.body.classList.add('client-mode');
     setupHideables();
@@ -1441,6 +1521,7 @@ body.edit-mode .is-hidden .hide-x{display:none;}
     applyEditMode(isClientMode ? false : loadJSON(STORAGE_MODE, false));
     setView(loadJSON(STORAGE_VIEW, 'insights'));
     initFirebaseSync();
+    renderYTDColumn();
   }
 
   if(document.readyState === 'loading'){
